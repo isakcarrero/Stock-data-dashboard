@@ -1,4 +1,8 @@
-
+import scalafx.application.JFXApp3
+import scalafx.scene.Scene
+import scalafx.scene.layout.Pane
+import scalafx.scene.paint.Color
+import scalafx.scene.shape.Rectangle
 
 object Main extends JFXApp3:
 
@@ -19,7 +23,7 @@ object Main extends JFXApp3:
       y = 175
       width = 50
       height = 50
-      fill = Blue
+      fill = Color.Blue
 
     root.children += rectangle
 
