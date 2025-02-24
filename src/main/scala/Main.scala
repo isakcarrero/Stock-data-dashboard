@@ -1,31 +1,44 @@
 import scalafx.application.JFXApp3
-import scalafx.scene.Scene
-import scalafx.scene.layout.Pane
-import scalafx.scene.paint.Color
-import scalafx.scene.shape.Rectangle
+import scalafx.scene.layout._
+import scalafx.scene._
+import scalafx.scene.control.{Menu, MenuBar, MenuItem}
+
 
 object Main extends JFXApp3:
 
   def start() =
 
     stage = new JFXApp3.PrimaryStage:
-      title = "UniqueProjectName"
-      width = 600
-      height = 450
+      title = "MyStocks.com"
+      width = 950
+      height = 700
 
-    val root = Pane()
+    val rootPane = BorderPane()
 
-    val scene = Scene(parent = root)
+    val scene = Scene(parent = rootPane)
     stage.scene = scene
 
-    val rectangle = new Rectangle:
-      x = 275
-      y = 175
-      width = 50
-      height = 50
-      fill = Color.Blue
+    /**The menu bar**/
+    val menu = new MenuBar
 
-    root.children += rectangle
+    val menuFiles = Menu("File")
+    val newFile = new MenuItem("New")
+    val importFile = new MenuItem("Import")
+    val exportFile = new MenuItem("Export")
+    menuFiles.items = List(newFile, importFile, exportFile)
+
+    val createPortfolio = Menu("Create Portfolio")
+
+    val help = Menu("Help")
+    val addStock = new MenuItem("Adding a stock")
+    val removeStock = new MenuItem("Removing a stock")
+    val addChart = new MenuItem("Adding a chart")
+    help.items = List(addStock, removeStock, addChart)
+
+    menu.menus = List(menuFiles, createPortfolio, help)
+
+    rootPane.top = menu
+
 
   end start
 
