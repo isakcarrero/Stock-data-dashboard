@@ -2,7 +2,7 @@
 import scalafx.scene.layout.*
 import scalafx.Includes.*
 import scalafx.scene.*
-import scalafx.scene.control.{Alert, Button, ChoiceDialog, Label, Menu, MenuBar, MenuItem, ScrollPane, Slider, SplitPane, Tab, TabPane, TableView, TextField, TextInputDialog, Tooltip}
+import scalafx.scene.control.{Alert, Button, ChoiceDialog, ComboBox, Label, Menu, MenuBar, MenuItem, ScrollPane, Slider, SplitPane, Tab, TabPane, TableView, TextField, TextInputDialog, Tooltip}
 import scalafx.stage.{Modality, Popup, Stage}
 import scalafx.scene.{Node, Scene, control}
 import scalafx.application.JFXApp3
@@ -10,6 +10,7 @@ import scalafx.event.ActionEvent
 import scalafx.geometry.{HPos, Insets, Pos, VPos}
 import scalafx.scene.layout.{BorderPane, HBox}
 import scalafx.Includes.eventClosureWrapperWithParam
+import scalafx.collections.ObservableBuffer
 import scalafx.event.EventIncludes.eventClosureWrapperWithParam
 import scalafx.scene.shape.Rectangle
 
@@ -84,26 +85,20 @@ object Main extends JFXApp3:
           val portfolioLabel = new Label(name)
           portfolioLabel.style = "-fx-padding: 5px;"
 
-          val addButton = new Button("+"):
-            style = "-fx-font-size: 10px; -fx-padding: 5px 7px;"
+          val addStockButton = new Button("+"):
+            style = "-fx-font-size: 10px; -fx-padding: 7px 9px;"
 
-      /** Need to fix the spacing between the objects **/
+      /** Need to fix the spacing portfolios **/
+          val items = ObservableBuffer[String]()
+          val comboBox = new ComboBox[String](items):
+            promptText = dialog.result.value
+            prefWidth = sidebar.width.value - 30
+
           val hbox = new HBox:
             maxWidth = sidebar.width.value
-            children = Seq(portfolioLabel, addButton)
-            alignment = Pos.CenterRight
+            children = Seq(comboBox, addStockButton)
 
-          val rectangle = new Rectangle:
-            width = sidebar.width.value
-            height = 30
-            style = "-fx-fill: white; -fx-stroke: darkgray; -fx-stroke-width: 1px;"
-
-          val stackPane = new StackPane:
-            children = Seq(rectangle, hbox)
-            alignment = Pos.CenterLeft
-            style = "-fx-padding: 5px 0px 0px 0px;"
-
-          sidebar.children.add(stackPane)
+          sidebar.children.add(hbox)
         case None =>
           println("Portfolio creation cancelled.")
     /**********************************************************************************************
