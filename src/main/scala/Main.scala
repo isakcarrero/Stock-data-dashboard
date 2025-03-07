@@ -72,11 +72,7 @@ object Main extends JFXApp3:
     rootPane.left = sidebar
     /*** kolla vilken pane som ska användas för att kunna gö en 2x2 matris me cardsen. Additionally, kolla hur den blir responsiv**/
 
-
     rootPane.center = Card().cardGrid
-
-
-
 
     /**********************************************************************************************
     /**Menubar methods**/
@@ -95,10 +91,9 @@ object Main extends JFXApp3:
           val portfolioLabel = new Label(name)
           portfolioLabel.style = "-fx-padding: 5px;"
 
-      /** Need to fix the spacing portfolios **/
           val items = ObservableBuffer[String]()
           val portfolioDropdown = new ComboBox[String](items):
-            promptText = dialog.result.value
+            promptText = name
             prefWidth = sidebar.width.value - 30
 
           val addStockButton = new Button("+"):
@@ -107,8 +102,21 @@ object Main extends JFXApp3:
           val portfolioContainer = new HBox:
             maxWidth = sidebar.width.value
             children = Seq(portfolioDropdown, addStockButton)
+          
+          addStockButton.setOnAction(_ =>
+            val stockDialog = new TextInputDialog():
+              title = s"Add Stock to $name"
+              headerText = "Enter stock ticker:"
+              contentText = "Stock Symbol:"
+            val stockResult = stockDialog.showAndWait()
 
+            stockResult match
+              case Some(stock) if stock.nonEmpty && !items.contains(stock) =>
+                items += stock // Add stock to dropdown (below portfolio name)
+              case _ => println("Stock addition cancelled or duplicate stock.")
+          )
           sidebar.children.add(portfolioContainer)
+        
         case None =>
           println("Portfolio creation cancelled.")
     /**********************************************************************************************
