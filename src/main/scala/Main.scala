@@ -1,4 +1,5 @@
 
+
 import scalafx.scene.layout.*
 import scalafx.Includes.*
 import scalafx.scene.*
@@ -12,7 +13,9 @@ import scalafx.scene.layout.{BorderPane, HBox}
 import scalafx.Includes.eventClosureWrapperWithParam
 import scalafx.collections.ObservableBuffer
 import scalafx.event.EventIncludes.eventClosureWrapperWithParam
+import scalafx.scene.paint.Color
 import scalafx.scene.shape.Rectangle
+import Visuals.Card
 
 
 
@@ -22,8 +25,8 @@ object Main extends JFXApp3:
 
     stage = new JFXApp3.PrimaryStage:
       title = "MyStocks.com"
-      width = 950
-      height = 700
+      maxWidth = 950
+      maxHeight = 700
 
 
     val rootPane = BorderPane()
@@ -60,13 +63,20 @@ object Main extends JFXApp3:
     rootPane.top = menu
 
     /**********************************************************************************************
-    /**Sidebar**/
+    /**Sidebar and card grid**/
     **********************************************************************************************/
     val sidebar = new VBox()
     sidebar.setPrefWidth(200)
     sidebar.setMaxWidth(200)
     sidebar.setStyle("-fx-background-color: #ececec")
     rootPane.left = sidebar
+    /*** kolla vilken pane som ska användas för att kunna gö en 2x2 matris me cardsen. Additionally, kolla hur den blir responsiv**/
+
+
+    rootPane.center = Card().cardGrid
+
+
+
 
     /**********************************************************************************************
     /**Menubar methods**/
@@ -85,20 +95,20 @@ object Main extends JFXApp3:
           val portfolioLabel = new Label(name)
           portfolioLabel.style = "-fx-padding: 5px;"
 
-          val addStockButton = new Button("+"):
-            style = "-fx-font-size: 10px; -fx-padding: 7px 9px;"
-
       /** Need to fix the spacing portfolios **/
           val items = ObservableBuffer[String]()
-          val comboBox = new ComboBox[String](items):
+          val portfolioDropdown = new ComboBox[String](items):
             promptText = dialog.result.value
             prefWidth = sidebar.width.value - 30
 
-          val hbox = new HBox:
-            maxWidth = sidebar.width.value
-            children = Seq(comboBox, addStockButton)
+          val addStockButton = new Button("+"):
+            style = "-fx-font-size: 10px; -fx-padding: 7px 9px;"
 
-          sidebar.children.add(hbox)
+          val portfolioContainer = new HBox:
+            maxWidth = sidebar.width.value
+            children = Seq(portfolioDropdown, addStockButton)
+
+          sidebar.children.add(portfolioContainer)
         case None =>
           println("Portfolio creation cancelled.")
     /**********************************************************************************************
@@ -107,6 +117,7 @@ object Main extends JFXApp3:
 
     createPortfolio.onAction = (e: ActionEvent) => newPortfolio()
 
+    /**addStockButton.onAction = (e: ActionEvent) => addStockToPortfolio()**/
 
 
 
