@@ -1,5 +1,3 @@
-
-
 import scalafx.scene.layout.*
 import scalafx.Includes.*
 import scalafx.scene.*
@@ -89,20 +87,25 @@ object Main extends JFXApp3:
       result match
         case Some(name) =>
           val portfolioLabel = new Label(name)
-          portfolioLabel.style = "-fx-padding: 5px;"
+          portfolioLabel.style = "-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 5px;"
 
           val items = ObservableBuffer[String]()
           val portfolioDropdown = new ComboBox[String](items):
-            promptText = name
+            promptText = "Stocks"
             prefWidth = sidebar.width.value - 30
 
           val addStockButton = new Button("+"):
             style = "-fx-font-size: 10px; -fx-padding: 7px 9px;"
 
-          val portfolioContainer = new HBox:
+          val stocksContainer = new HBox:
             maxWidth = sidebar.width.value
             children = Seq(portfolioDropdown, addStockButton)
-          
+
+          val portfolioContainer = new VBox:
+            maxWidth = sidebar.width.value
+            style = "-fx-border-color: #d3d3d3; -fx-border-width: 2px; -fx-margin-top: 50px"
+            children = Seq(portfolioLabel, stocksContainer)
+
           addStockButton.setOnAction(_ =>
             val stockDialog = new TextInputDialog():
               title = s"Add Stock to $name"
@@ -112,11 +115,11 @@ object Main extends JFXApp3:
 
             stockResult match
               case Some(stock) if stock.nonEmpty && !items.contains(stock) =>
-                items += stock // Add stock to dropdown (below portfolio name)
+                items += stock
               case _ => println("Stock addition cancelled or duplicate stock.")
           )
           sidebar.children.add(portfolioContainer)
-        
+
         case None =>
           println("Portfolio creation cancelled.")
     /**********************************************************************************************
