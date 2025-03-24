@@ -68,7 +68,6 @@ object Main extends JFXApp3:
     sidebar.setMaxWidth(200)
     sidebar.setStyle("-fx-background-color: #ececec")
     rootPane.left = sidebar
-    /*** kolla vilken pane som ska användas för att kunna gö en 2x2 matris me cardsen. Additionally, kolla hur den blir responsiv**/
 
     rootPane.center = Card().cardGrid
 
@@ -129,8 +128,7 @@ object Main extends JFXApp3:
     createPortfolio.onAction = (e: ActionEvent) => newPortfolio()
 
     /**addStockButton.onAction = (e: ActionEvent) => addStockToPortfolio()**/
-
-
+    
 
   end start
 

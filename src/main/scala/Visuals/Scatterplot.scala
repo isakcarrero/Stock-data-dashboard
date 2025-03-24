@@ -1,0 +1,3 @@
+package Visuals
+
+class Scatterplot 
