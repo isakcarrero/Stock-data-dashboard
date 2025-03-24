@@ -128,7 +128,7 @@ object Main extends JFXApp3:
     createPortfolio.onAction = (e: ActionEvent) => newPortfolio()
 
     /**addStockButton.onAction = (e: ActionEvent) => addStockToPortfolio()**/
-    
+
 
   end start
 
