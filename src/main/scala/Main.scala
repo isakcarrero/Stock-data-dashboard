@@ -85,7 +85,7 @@ object Main extends JFXApp3:
       val result = dialog.showAndWait()
 
       result match
-        case Some(namee) =>
+        case Some(name) =>
           val portfolioLabel = new Label(name)
           portfolioLabel.style = "-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 5px;"
 
