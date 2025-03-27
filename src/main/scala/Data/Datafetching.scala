@@ -32,7 +32,7 @@ object StockDataFetcher:
     val dataFetcher = new Datafetching()
 
     /** change after every download*/
-    val stocks = List("IDXX", "ILMN", "INCY", "INTC", "INTU", "ISRG", "JD", "KDP", "KHC", "KLAC", "LRCX", "LULU", "MAR", "MCHP", "MDLZ", "MELI", "MNST", "MSFT", "MU", "MXIM", "NFLX", "NTAP", "NTES", "NVDA", "NXPI", "ORLY", "PAYX", "PCAR", "PDD", "PEP", "PYPL", "QCOM", "REGN", "ROST", "SBUX", "SGEN", "SIRI", "SNPS", "SPLK", "SWKS", "TCDA", "TMUS", "TSLA", "TTWO", "TXN", "ULTA", "VRSK", "VRSN", "WBA", "WDAY", "WDC", "WLTW", "XEL", "XLNX", "ZM", "ZS")
+    val stocks = List("ORLY", "PAYX", "PCAR", "PDD", "PEP", "PYPL", "QCOM", "REGN", "ROST", "SBUX", "SGEN", "SIRI", "SNPS", "SPLK", "SWKS", "TCDA", "TMUS", "TSLA", "TTWO", "TXN", "ULTA", "VRSK", "VRSN", "WBA", "WDAY", "WDC", "WLTW", "XEL", "XLNX", "ZM", "ZS")
 
     stocks.foreach: stock =>
       dataFetcher.getStockData(stock) match

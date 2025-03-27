@@ -1,21 +1,19 @@
-import scalafx.scene.layout.*
-import scalafx.Includes.*
-import scalafx.scene.*
-import scalafx.scene.control.{Alert, Button, ChoiceDialog, ComboBox, Label, Menu, MenuBar, MenuItem, ScrollPane, Slider, SplitPane, Tab, TabPane, TableView, TextField, TextInputDialog, Tooltip}
+import scalafx.scene.layout._
+import scalafx.Includes._
+import scalafx.scene._
+import scalafx.scene.control.{Alert, Button, ChoiceDialog, ComboBox, Label, Menu, MenuBar, MenuItem, ScrollPane, Slider, SplitPane, Tab, TabPane, TableView, TextField, TextInputDialog, Tooltip, Dialog, DatePicker}
 import scalafx.stage.{Modality, Popup, Stage}
 import scalafx.scene.{Node, Scene, control}
 import scalafx.application.JFXApp3
 import scalafx.event.ActionEvent
 import scalafx.geometry.{HPos, Insets, Pos, VPos}
-import scalafx.scene.layout.{BorderPane, HBox}
+import scalafx.scene.layout.{BorderPane, HBox, GridPane}
 import scalafx.Includes.eventClosureWrapperWithParam
 import scalafx.collections.ObservableBuffer
 import scalafx.event.EventIncludes.eventClosureWrapperWithParam
 import scalafx.scene.paint.Color
 import scalafx.scene.shape.Rectangle
 import Visuals.Card
-
-
 
 object Main extends JFXApp3:
 
@@ -26,19 +24,14 @@ object Main extends JFXApp3:
       maxWidth = 950
       maxHeight = 700
 
-
     val rootPane = BorderPane()
     val scene = Scene(parent = rootPane)
 
     stage.scene = scene
 
-
-
-
-    /**********************************************************************************************
-    /**The menubar and the different options (File, Portfolio, Help), as well as their suboptions**/
-    **********************************************************************************************/
-
+/** ********************************************************************************************
+ * /**The menubar and the different options (File, Portfolio, Help), as well as their suboptions**/
+ * ******************************************************************************************** */
 
     val menu = new MenuBar
     val menuFiles = Menu("File")
@@ -60,9 +53,10 @@ object Main extends JFXApp3:
     menu.menus = List(menuFiles, portfolio, help)
     rootPane.top = menu
 
-    /**********************************************************************************************
-    /**Sidebar and card grid**/
-    **********************************************************************************************/
+/** ********************************************************************************************
+ * /**Sidebar and card grid**/
+ * ******************************************************************************************** */
+
     val sidebar = new VBox()
     sidebar.setPrefWidth(200)
     sidebar.setMaxWidth(200)
@@ -71,11 +65,11 @@ object Main extends JFXApp3:
 
     rootPane.center = Card().cardGrid
 
-    /**********************************************************************************************
-    /**Menubar methods**/
-    **********************************************************************************************/
+/** ********************************************************************************************
+ * /**Menubar methods**/
+ * ******************************************************************************************** */
 
-    /** For creating a new fortfolio **/
+/** For creating a new fortfolio * */
     def newPortfolio(): Unit =
       val dialog = new TextInputDialog():
         title = "Name Your Portfolio"
@@ -106,31 +100,54 @@ object Main extends JFXApp3:
             children = Seq(portfolioLabel, stocksContainer)
 
           addStockButton.setOnAction(_ =>
-            val stockDialog = new TextInputDialog():
+            val dialog = new Dialog[Unit]():
               title = s"Add Stock to $name"
-              headerText = "Enter stock ticker:"
-              contentText = "Stock Symbol:"
-            val stockResult = stockDialog.showAndWait()
+              headerText = "Enter stock details"
 
-            stockResult match
-              case Some(stock) if stock.nonEmpty && !items.contains(stock) =>
-                items += stock
-              case _ => println("Stock addition cancelled or duplicate stock.")
+            val tickerField = new TextField():
+              promptText = "Stock Ticker (e.g., AAPL)"
+
+            val sharesField = new TextField():
+              promptText = "Number of Shares"
+
+            val priceField = new TextField():
+              promptText = "Price per Share"
+
+            val datePicker = new DatePicker()
+
+            val grid = new GridPane():
+              hgap = 10
+              vgap = 10
+              padding = Insets(20)
+              add(new Label("Ticker:"), 0, 0)
+              add(tickerField, 1, 0)
+              add(new Label("Shares:"), 0, 1)
+              add(sharesField, 1, 1)
+              add(new Label("Price:"), 0, 2)
+              add(priceField, 1, 2)
+              add(new Label("Date:"), 0, 3)
+              add(datePicker, 1, 3)
+
+            dialog.dialogPane().content = grid
+            dialog.dialogPane().buttonTypes = Seq(javafx.scene.control.ButtonType.OK, javafx.scene.control.ButtonType.CANCEL)
+
+            dialog.showAndWait()
+
+            // For now just add the ticker to maintain original behavior
+            if (tickerField.text.value.nonEmpty && !items.contains(tickerField.text.value)) then
+              items += tickerField.text.value
           )
+
           sidebar.children.add(portfolioContainer)
 
         case None =>
           println("Portfolio creation cancelled.")
-    /**********************************************************************************************
-    /**Event handling**/
-    **********************************************************************************************/
+
+/** ********************************************************************************************
+ * /**Event handling**/
+ * ******************************************************************************************** */
 
     createPortfolio.onAction = (e: ActionEvent) => newPortfolio()
 
-    /**addStockButton.onAction = (e: ActionEvent) => addStockToPortfolio()**/
-
-
   end start
-
 end Main
-
