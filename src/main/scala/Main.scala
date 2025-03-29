@@ -1,18 +1,14 @@
 import scalafx.scene.layout._
 import scalafx.Includes._
 import scalafx.scene._
-import scalafx.scene.control.{Alert, Button, ChoiceDialog, ComboBox, Label, Menu, MenuBar, MenuItem, ScrollPane, Slider, SplitPane, Tab, TabPane, TableView, TextField, TextInputDialog, Tooltip, Dialog, DatePicker}
-import scalafx.stage.{Modality, Popup, Stage}
+import scalafx.scene.control._
 import scalafx.scene.{Node, Scene, control}
 import scalafx.application.JFXApp3
 import scalafx.event.ActionEvent
-import scalafx.geometry.{HPos, Insets, Pos, VPos}
-import scalafx.scene.layout.{BorderPane, HBox, GridPane}
-import scalafx.Includes.eventClosureWrapperWithParam
+import scalafx.geometry._
+import scalafx.scene.layout._
 import scalafx.collections.ObservableBuffer
 import scalafx.event.EventIncludes.eventClosureWrapperWithParam
-import scalafx.scene.paint.Color
-import scalafx.scene.shape.Rectangle
 import Visuals.Card
 
 object Main extends JFXApp3:
@@ -29,9 +25,9 @@ object Main extends JFXApp3:
 
     stage.scene = scene
 
-/** ********************************************************************************************
- * /**The menubar and the different options (File, Portfolio, Help), as well as their suboptions**/
- * ******************************************************************************************** */
+    /** ********************************************************************************************
+     * /**The menubar and the different options (File, Portfolio, Help), as well as their suboptions**/
+     * ******************************************************************************************** */
 
     val menu = new MenuBar
     val menuFiles = Menu("File")
@@ -53,23 +49,30 @@ object Main extends JFXApp3:
     menu.menus = List(menuFiles, portfolio, help)
     rootPane.top = menu
 
-/** ********************************************************************************************
- * /**Sidebar and card grid**/
- * ******************************************************************************************** */
+    /** ********************************************************************************************
+     * /**Sidebar and card grid**/
+     * ******************************************************************************************** */
 
-    val sidebar = new VBox()
-    sidebar.setPrefWidth(200)
-    sidebar.setMaxWidth(200)
-    sidebar.setStyle("-fx-background-color: #ececec")
-    rootPane.left = sidebar
+    val sidebarContent = new VBox()
+    sidebarContent.setStyle("-fx-background-color: #ececec")
+
+    val scrollPane = new ScrollPane:
+      content = sidebarContent
+      fitToWidth = true
+      hbarPolicy = ScrollPane.ScrollBarPolicy.Never
+      style = "-fx-background: #ececec; -fx-border-color: #ececec"
+
+    scrollPane.setPrefWidth(200)
+    scrollPane.setMaxWidth(200)
+    rootPane.left = scrollPane
 
     rootPane.center = Card().cardGrid
 
-/** ********************************************************************************************
- * /**Menubar methods**/
- * ******************************************************************************************** */
+    /** ********************************************************************************************
+     * /**Menubar methods**/
+     * ******************************************************************************************** */
 
-/** For creating a new fortfolio * */
+    /** For creating a new fortfolio * */
     def newPortfolio(): Unit =
       val dialog = new TextInputDialog():
         title = "Name Your Portfolio"
@@ -85,17 +88,17 @@ object Main extends JFXApp3:
           val items = ObservableBuffer[String]()
           val portfolioDropdown = new ComboBox[String](items):
             promptText = "Stocks"
-            prefWidth = sidebar.width.value - 30
+            prefWidth = 170  // Adjusted to account for scrollbar
 
           val addStockButton = new Button("+"):
             style = "-fx-font-size: 10px; -fx-padding: 7px 9px;"
 
           val stocksContainer = new HBox:
-            maxWidth = sidebar.width.value
+            maxWidth = 200
             children = Seq(portfolioDropdown, addStockButton)
 
           val portfolioContainer = new VBox:
-            maxWidth = sidebar.width.value
+            maxWidth = 200
             style = "-fx-border-color: #d3d3d3; -fx-border-width: 2px; -fx-margin-top: 50px"
             children = Seq(portfolioLabel, stocksContainer)
 
@@ -133,19 +136,19 @@ object Main extends JFXApp3:
 
             dialog.showAndWait()
 
-            // For now just add the ticker to maintain original behavior
+            // checca dehär
             if (tickerField.text.value.nonEmpty && !items.contains(tickerField.text.value)) then
               items += tickerField.text.value
           )
 
-          sidebar.children.add(portfolioContainer)
+          sidebarContent.children.add(portfolioContainer)
 
         case None =>
           println("Portfolio creation cancelled.")
 
-/** ********************************************************************************************
- * /**Event handling**/
- * ******************************************************************************************** */
+    /** ********************************************************************************************
+     * /**Event handling**/
+     * ******************************************************************************************** */
 
     createPortfolio.onAction = (e: ActionEvent) => newPortfolio()
 

@@ -12,7 +12,7 @@ import scala.util.Failure
 class Datafetching:
   val APIKey = "LMJ7WY6F7CEEQUAD"
 
-  /** Fetches stock data and saves it to a file in the StockAPIData folder. */
+  /** Fetches stock data and saves it to a file in the StockAPIData folder */
   def getStockData(ticker: String): Try[Unit] =
     Try:
       val url = new URL(s"https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol=$ticker&apikey=$APIKey&datatype=json")
@@ -32,7 +32,7 @@ object StockDataFetcher:
     val dataFetcher = new Datafetching()
 
     /** change after every download*/
-    val stocks = List("ORLY", "PAYX", "PCAR", "PDD", "PEP", "PYPL", "QCOM", "REGN", "ROST", "SBUX", "SGEN", "SIRI", "SNPS", "SPLK", "SWKS", "TCDA", "TMUS", "TSLA", "TTWO", "TXN", "ULTA", "VRSK", "VRSN", "WBA", "WDAY", "WDC", "WLTW", "XEL", "XLNX", "ZM", "ZS")
+    val stocks = List("WDC", "WLTW", "XEL", "XLNX", "ZM", "ZS")
 
     stocks.foreach: stock =>
       dataFetcher.getStockData(stock) match
