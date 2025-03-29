@@ -10,6 +10,7 @@ import scalafx.scene.layout._
 import scalafx.collections.ObservableBuffer
 import scalafx.event.EventIncludes.eventClosureWrapperWithParam
 import Visuals.Card
+import scalafx.scene.shape.Polygon
 
 object Main extends JFXApp3:
 
@@ -55,6 +56,7 @@ object Main extends JFXApp3:
 
     val sidebarContent = new VBox()
     sidebarContent.setStyle("-fx-background-color: #ececec")
+    sidebarContent.spacing = 5
 
     val scrollPane = new ScrollPane:
       content = sidebarContent
@@ -83,26 +85,53 @@ object Main extends JFXApp3:
       result match
         case Some(name) =>
           val portfolioLabel = new Label(name)
-          portfolioLabel.style = "-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 5px;"
+          portfolioLabel.style = "-fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 5px;"
 
           val items = ObservableBuffer[String]()
-          val portfolioDropdown = new ComboBox[String](items):
-            promptText = "Stocks"
-            prefWidth = 170  // Adjusted to account for scrollbar
 
           val addStockButton = new Button("+"):
-            style = "-fx-font-size: 10px; -fx-padding: 7px 9px;"
+            style = "-fx-font-size: 10px; -fx-padding: 5px 8px; -fx-background-radius: 3px;"
 
-          val stocksContainer = new HBox:
-            maxWidth = 200
-            children = Seq(portfolioDropdown, addStockButton)
+          val arrowButton = new Button():
+            graphic = new Polygon {
+              points.addAll(0.0, 0.0, 10.0, 0.0, 5.0, 8.0)
+              style = "-fx-fill: black;"
+            }
+            style = "-fx-background-color: transparent; -fx-padding: 5px;"
+
+          val portfolioHeader = new HBox:
+            spacing = 5
+            children = Seq(portfolioLabel, new Region { hgrow = Priority.Always }, arrowButton, addStockButton)
+            style = "-fx-alignment: center-left; -fx-padding: 5px;"
+
+          val stockList = new VBox:
+            spacing = 3
+            style = "-fx-padding: 5px; -fx-background-color: white; -fx-border-color: #d3d3d3; -fx-border-width: 1px;"
+            visible = false
+            managed = false
 
           val portfolioContainer = new VBox:
             maxWidth = 200
-            style = "-fx-border-color: #d3d3d3; -fx-border-width: 2px; -fx-margin-top: 50px"
-            children = Seq(portfolioLabel, stocksContainer)
+            prefHeight = 40
+            style = "-fx-border-color: #d3d3d3; -fx-border-width: 2px; -fx-background-color: white; -fx-border-radius: 3px;"
+            children = Seq(portfolioHeader, stockList)
 
-          addStockButton.setOnAction(_ =>
+          var isExpanded = false
+          arrowButton.onAction = _ =>
+            isExpanded = !isExpanded
+            stockList.visible = isExpanded
+            stockList.managed = isExpanded
+
+            /**val polygon = arrowButton.graphic.asInstanceOf[Polygon]
+            polygon.points.clear()
+            if isExpanded then
+              polygon.points.addAll(0.0, 8.0, 10.0, 8.0, 5.0, 0.0)
+              portfolioContainer.prefHeight = 40 + (items.size * 25)
+            else
+              polygon.points.addAll(0.0, 0.0, 10.0, 0.0, 5.0, 8.0)
+              portfolioContainer.prefHeight = 40 **/
+
+          addStockButton.onAction = _ =>
             val dialog = new Dialog[Unit]():
               title = s"Add Stock to $name"
               headerText = "Enter stock details"
@@ -132,14 +161,16 @@ object Main extends JFXApp3:
               add(datePicker, 1, 3)
 
             dialog.dialogPane().content = grid
-            dialog.dialogPane().buttonTypes = Seq(javafx.scene.control.ButtonType.OK, javafx.scene.control.ButtonType.CANCEL)
+            dialog.dialogPane().buttonTypes = Seq(ButtonType.OK, ButtonType.Cancel)
 
             dialog.showAndWait()
 
-            // checca dehär
-            if (tickerField.text.value.nonEmpty && !items.contains(tickerField.text.value)) then
+            if tickerField.text.value.nonEmpty && !items.contains(tickerField.text.value) then
               items += tickerField.text.value
-          )
+              val stockLabel = new Label(tickerField.text.value):
+                style = "-fx-padding: 3px; -fx-font-size: 14px;"
+              stockList.children.add(stockLabel)
+              if !isExpanded then arrowButton.fire()
 
           sidebarContent.children.add(portfolioContainer)
 
