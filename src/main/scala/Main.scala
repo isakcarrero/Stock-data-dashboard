@@ -87,18 +87,18 @@ object Main extends JFXApp3:
           val portfolioLabel = new Label(name)
           portfolioLabel.style = "-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 5px;"
 
-          val items = ObservableBuffer[String]()
+          val stocksInPortfolio = ObservableBuffer[String]()
 
           val addStockButton = new Button("+"):
             style = "-fx-font-size: 12px; -fx-font-weight: bold;"
 
           var isExpanded = false
-          
+
           val arrowButton = new Button():
             graphic = new Polygon:
               points.addAll(0.0, 0.0, 10.0, 0.0, 5.0, 8.0)
               style = "-fx-fill: black;"
-          
+
           val portfolioHeader = new HBox:
             spacing = 5
             children = Seq(portfolioLabel, new Region { hgrow = Priority.Always }, arrowButton, addStockButton)
@@ -116,13 +116,13 @@ object Main extends JFXApp3:
             style = "-fx-border-color: #d3d3d3; -fx-border-width: 2px; -fx-background-color: white; -fx-border-radius: 3px;"
             children = Seq(portfolioHeader, stockList)
 
-          
+          /** for viewing stocks in fortfolio */
           arrowButton.onAction = _ =>
             isExpanded = !isExpanded
             stockList.visible = isExpanded
             stockList.managed = isExpanded
-          
 
+          /** dialog for adding stocks to portfolio */
           addStockButton.onAction = _ =>
             val dialog = new Dialog[Unit]():
               title = s"Add Stock to $name"
@@ -154,15 +154,23 @@ object Main extends JFXApp3:
 
             dialog.dialogPane().content = grid
             dialog.dialogPane().buttonTypes = Seq(ButtonType.OK, ButtonType.Cancel)
-
             dialog.showAndWait()
+            
+            /** currently checks for duplicas, will be changed and stocks in fortfolio has to be uppdated */
+            if tickerField.text.value.nonEmpty && !stocksInPortfolio.contains(tickerField.text.value) then
+              stocksInPortfolio += tickerField.text.value
+            val stockLabel = new Label(tickerField.text.value):
+              style = "-fx-padding: 3px; -fx-font-size: 12px;"
+            val shareInfo = new Label(s"${sharesField.text.value} shares @ ${priceField.text.value}"):
+              style = "-fx-padding: 3px; -fx-font-size: 10px;"
+            val stockEntry = new HBox:
+              spacing = 10
+              children = Seq(stockLabel, new Region { hgrow = Priority.Always}, shareInfo)
 
-            if tickerField.text.value.nonEmpty && !items.contains(tickerField.text.value) then
-              items += tickerField.text.value
-              val stockLabel = new Label(tickerField.text.value):
-                style = "-fx-padding: 3px; -fx-font-size: 12px;"
-              stockList.children.add(stockLabel)
-              if !isExpanded then arrowButton.fire()
+            stockList.children.add(stockEntry)
+            
+            /**opens stocklist if it is closed**/
+            if !isExpanded then arrowButton.fire()
 
           sidebarContent.children.add(portfolioContainer)
 
