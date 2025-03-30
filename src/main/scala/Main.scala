@@ -85,20 +85,20 @@ object Main extends JFXApp3:
       result match
         case Some(name) =>
           val portfolioLabel = new Label(name)
-          portfolioLabel.style = "-fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 5px;"
+          portfolioLabel.style = "-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 5px;"
 
           val items = ObservableBuffer[String]()
 
           val addStockButton = new Button("+"):
-            style = "-fx-font-size: 10px; -fx-padding: 5px 8px; -fx-background-radius: 3px;"
+            style = "-fx-font-size: 12px; -fx-font-weight: bold;"
 
+          var isExpanded = false
+          
           val arrowButton = new Button():
-            graphic = new Polygon {
+            graphic = new Polygon:
               points.addAll(0.0, 0.0, 10.0, 0.0, 5.0, 8.0)
               style = "-fx-fill: black;"
-            }
-            style = "-fx-background-color: transparent; -fx-padding: 5px;"
-
+          
           val portfolioHeader = new HBox:
             spacing = 5
             children = Seq(portfolioLabel, new Region { hgrow = Priority.Always }, arrowButton, addStockButton)
@@ -116,20 +116,12 @@ object Main extends JFXApp3:
             style = "-fx-border-color: #d3d3d3; -fx-border-width: 2px; -fx-background-color: white; -fx-border-radius: 3px;"
             children = Seq(portfolioHeader, stockList)
 
-          var isExpanded = false
+          
           arrowButton.onAction = _ =>
             isExpanded = !isExpanded
             stockList.visible = isExpanded
             stockList.managed = isExpanded
-
-            /**val polygon = arrowButton.graphic.asInstanceOf[Polygon]
-            polygon.points.clear()
-            if isExpanded then
-              polygon.points.addAll(0.0, 8.0, 10.0, 8.0, 5.0, 0.0)
-              portfolioContainer.prefHeight = 40 + (items.size * 25)
-            else
-              polygon.points.addAll(0.0, 0.0, 10.0, 0.0, 5.0, 8.0)
-              portfolioContainer.prefHeight = 40 **/
+          
 
           addStockButton.onAction = _ =>
             val dialog = new Dialog[Unit]():
@@ -168,7 +160,7 @@ object Main extends JFXApp3:
             if tickerField.text.value.nonEmpty && !items.contains(tickerField.text.value) then
               items += tickerField.text.value
               val stockLabel = new Label(tickerField.text.value):
-                style = "-fx-padding: 3px; -fx-font-size: 14px;"
+                style = "-fx-padding: 3px; -fx-font-size: 12px;"
               stockList.children.add(stockLabel)
               if !isExpanded then arrowButton.fire()
 
