@@ -1,12 +1,11 @@
 package Visuals
 
+import Data.PortfolioManager
 import scalafx.geometry.Insets
 import scalafx.scene.control.{Button, ChoiceBox, Dialog, TextInputDialog}
 import scalafx.scene.layout.{ColumnConstraints, GridPane, RowConstraints, StackPane, VBox}
-
 import scalafx.scene.control.ButtonType
-
-import scala.collection.mutable.ListBuffer
+import scalafx.collections.ObservableBuffer
 
 class Card:
   val cardGrid = new GridPane()
@@ -45,11 +44,13 @@ class Card:
   cardGrid.add(card2, 1, 0)
   cardGrid.add(card3, 0, 1)
   cardGrid.add(card4, 1, 1)
+  
+  
+/** gets teh portfolio namnse so that they can ba diplayed */
+  def getPortfolioNames: ObservableBuffer[String] =
+    ObservableBuffer.from(PortfolioManager.getAllPortfolios.keys.toSeq)
 
-  /** This will be changed into the real portfolios later */
-  var portfolioNames = ListBuffer("Tech stocks", "Other stocks")
-
-  def showSelectionDialog()=
+  def showSelectionDialog() =
     val dialog = new Dialog[String]()
     dialog.setTitle("Select Display Type")
 
@@ -62,35 +63,35 @@ class Card:
 
     dialog.showAndWait() match
       case Some(`columnChart`) => columnChartDialog("Enter stock ticker:")
-      case Some(`infoCard`) => otherChartDialog()
-      case Some(`pieChart`) => otherChartDialog()
+      case Some(`infoCard`) => portfolioSelectionDialog("Select Portfolio for Information Card")
+      case Some(`pieChart`) => portfolioSelectionDialog("Select Portfolio for Pie Chart")
       case Some(`scatterPlot`) => scatterDialog()
       case _ =>
 
-  def columnChartDialog(promptText: String): Unit =
+  def columnChartDialog(ticker: String) =
     val textInputDialog = new TextInputDialog()
     textInputDialog.setTitle("Input Required")
     textInputDialog.setHeaderText(promptText)
     textInputDialog.showAndWait()
 
-  def otherChartDialog(): Unit =
+  def portfolioSelectionDialog(title: String) =
     val dialog = new Dialog[String]()
-    dialog.setTitle("Select Portfolio")
+    dialog.setTitle(title)
     val portfolioChoice = new ChoiceBox[String]()
-
-    portfolioChoice.getItems.addAll(portfolioNames.toSeq: _*)
+    
+    portfolioChoice.items = getPortfolioNames
 
     dialog.getDialogPane.setContent(portfolioChoice)
     dialog.getDialogPane.getButtonTypes.add(ButtonType.OK)
     dialog.showAndWait()
 
-  def scatterDialog(): Unit =
+  def scatterDialog() =
     val dialog = new Dialog[String]()
     dialog.setTitle("Select Portfolio and Color")
     val portfolioChoice = new ChoiceBox[String]()
-
-
-    portfolioChoice.getItems.addAll(portfolioNames.toSeq: _*)
+    
+    
+    portfolioChoice.items = getPortfolioNames
 
     val scatterColor = new ChoiceBox[String]()
     scatterColor.getItems.addAll("Green", "Red", "Blue", "Orange")
@@ -99,8 +100,3 @@ class Card:
     dialog.getDialogPane.setContent(vbox)
     dialog.getDialogPane.getButtonTypes.add(ButtonType.OK)
     dialog.showAndWait()
-
-
-
-
-

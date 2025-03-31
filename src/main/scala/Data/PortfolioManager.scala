@@ -10,7 +10,7 @@ case class Portfolio(portfolioName: String, stocks: mutable.Buffer[StockData])
 
 /** for managing all portfolios, checks if the portfolio already exists*/
 object PortfolioManager:
-  private val portfolios = mutable.LinkedHashMap[String, Portfolio]()
+  val portfolios = mutable.LinkedHashMap[String, Portfolio]()
   def createPortfolio(name: String): Boolean =
     if (portfolios.contains(name)) then
       false
