@@ -1,3 +1,6 @@
+import Visuals.Card
+import Data.PortfolioManager
+
 import scalafx.scene.layout._
 import scalafx.Includes._
 import scalafx.scene._
@@ -9,7 +12,6 @@ import scalafx.geometry._
 import scalafx.scene.layout._
 import scalafx.collections.ObservableBuffer
 import scalafx.event.EventIncludes.eventClosureWrapperWithParam
-import Visuals.Card
 import scalafx.scene.shape.Polygon
 
 object Main extends JFXApp3:

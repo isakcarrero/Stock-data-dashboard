@@ -31,8 +31,8 @@ object StockDataFetcher:
   def main(args: Array[String]): Unit =
     val dataFetcher = new Datafetching()
 
-    /** change after every download*/
-    val stocks = List("WDC", "WLTW", "XEL", "XLNX", "ZM", "ZS")
+    /** If you want to download files then add the ticker symbols of the stocks whos info you want to download*/
+    val stocks = List()
 
     stocks.foreach: stock =>
       dataFetcher.getStockData(stock) match
