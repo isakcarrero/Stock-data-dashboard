@@ -12,6 +12,7 @@ import scalafx.collections.ObservableBuffer
 import scalafx.event.EventIncludes
 import scalafx.scene.shape.Polygon
 
+import java.time.format.DateTimeFormatter
 import scala.util.*
 
 object Main extends JFXApp3:
@@ -188,7 +189,7 @@ object Main extends JFXApp3:
                       ticker = tickerField.text.value,
                       amount = sharesField.text.value.toInt,
                       price = priceField.text.value.toDouble,
-                      date = datePicker.value.toString)
+                      date = datePicker.getValue.format(DateTimeFormatter.ISO_DATE))
 
                     if PortfolioManager.addStockToPortfolio(name, stock) then
                       val stockLabel = new Label(stock.ticker):
