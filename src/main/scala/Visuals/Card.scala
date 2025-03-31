@@ -71,7 +71,7 @@ class Card:
   def columnChartDialog(ticker: String) =
     val textInputDialog = new TextInputDialog()
     textInputDialog.setTitle("Input Required")
-    textInputDialog.setHeaderText(promptText)
+    textInputDialog.setHeaderText(ticker)
     textInputDialog.showAndWait()
 
   def portfolioSelectionDialog(title: String) =
