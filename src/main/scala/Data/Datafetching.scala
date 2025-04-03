@@ -10,14 +10,15 @@ import scala.util.Success
 import scala.util.Failure
 
 class Datafetching:
-  val APIKey = "LMJ7WY6F7CEEQUAD"
+  private val APIKey = "LMJ7WY6F7CEEQUAD"
 
   /** Fetches stock data and saves it to a file in the StockAPIData folder */
-  def getStockData(ticker: String): Try[Unit] =
+  def getStockData(ticker: String) =
     Try:
       val url = new URL(s"https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol=$ticker&apikey=$APIKey&datatype=json")
       val jsonString = Source.fromInputStream(url.openStream()).mkString
 
+      /** if you dont have  afolder already then this creates one */
       val folder = new File("StockAPIData")
       if !folder.exists() then folder.mkdir()
 
