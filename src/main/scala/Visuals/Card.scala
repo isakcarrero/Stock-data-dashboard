@@ -1,10 +1,14 @@
 package Visuals
 
 import Data.PortfolioManager
+import Data.PortfolioManager
 import scalafx.geometry.Insets
-import scalafx.scene.control.{Button, ButtonType, ChoiceBox, ColorPicker, Dialog, TextInputDialog}
+import scalafx.scene.control.{Alert, Button, ButtonType, ChoiceBox, ColorPicker, Dialog, TextInputDialog}
 import scalafx.scene.layout.{ColumnConstraints, GridPane, RowConstraints, StackPane, VBox}
 import scalafx.collections.ObservableBuffer
+import scalafx.scene.Node
+import scalafx.scene.chart.PieChart
+import scalafx.scene.control.Alert.AlertType
 
 class Card:
   val cardGrid = new GridPane()
@@ -30,10 +34,11 @@ class Card:
     card.setStyle("-fx-background-color: white; -fx-border-color: #d3d3d3; -fx-border-width: 1px;")
     card.setPrefSize(400, 400)
     val button = new Button(text)
-    button.setOnAction(_ => showSelectionDialog())
+    button.setOnAction(_ => showSelectionDialog(card))
     card.getChildren.add(button)
     card
 
+  /** creating the four cards */
   private val card1 = createCard("Insert 1")
   private val card2 = createCard("Insert 2")
   private val card3 = createCard("Insert 3")
@@ -43,13 +48,13 @@ class Card:
   cardGrid.add(card2, 1, 0)
   cardGrid.add(card3, 0, 1)
   cardGrid.add(card4, 1, 1)
-  
-  
+
+
 /** gets teh portfolio namnse so that they can ba diplayed */
   def getPortfolioNames: ObservableBuffer[String] =
     ObservableBuffer.from(PortfolioManager.getAllPortfolios.keys.toSeq)
 
-  def showSelectionDialog() =
+  def showSelectionDialog(targetCard: StackPane) =
     val dialog = new Dialog[String]()
     dialog.setTitle("Select Display Type")
 
@@ -62,8 +67,8 @@ class Card:
 
     dialog.showAndWait() match
       case Some(`columnChart`) => columnChartDialog("Enter stock ticker:")
-      case Some(`infoCard`) => portfolioSelectionDialog("Select Portfolio for Information Card")
-      case Some(`pieChart`) => portfolioSelectionDialog("Select Portfolio for Pie Chart")
+      case Some(`infoCard`) => infoSelectionDialog("Select Portfolio for Information Card")
+      case Some(`pieChart`) => pieSelectionDialog(targetCard, "Select Portfolio")
       case Some(`scatterPlot`) => scatterDialog()
       case _ =>
 
@@ -73,27 +78,46 @@ class Card:
     textInputDialog.setHeaderText(ticker)
     textInputDialog.showAndWait()
 
-  def portfolioSelectionDialog(title: String) =
+  def infoSelectionDialog(title: String) =
     val dialog = new Dialog[String]()
     dialog.setTitle(title)
     val portfolioChoice = new ChoiceBox[String]()
-    
+
     portfolioChoice.items = getPortfolioNames
 
     dialog.getDialogPane.setContent(portfolioChoice)
     dialog.getDialogPane.getButtonTypes.add(ButtonType.OK)
     dialog.showAndWait()
 
+  def pieSelectionDialog(targetCard: StackPane, title: String) =
+    val dialog = new Dialog[String]()
+    dialog.setTitle(title)
+    val portfolioChoice = new ChoiceBox[String]()
+
+    portfolioChoice.items = getPortfolioNames
+
+    dialog.getDialogPane.setContent(portfolioChoice)
+    dialog.getDialogPane.getButtonTypes.add(ButtonType.OK)
+
+
+    dialog.showAndWait() match
+      case Some(ButtonType.OK) =>
+        val selectedPortfolio = portfolioChoice.getValue
+        PortfolioManager.getPortfolio(selectedPortfolio) match
+          case Some(portfolio) if portfolio.stocks.nonEmpty =>
+            val pieChartVisual = new Piechart(selectedPortfolio)
+            targetCard.getChildren.setAll(pieChartVisual.chart)
+          case Some(_) =>
+            new Alert(AlertType.Error, s"Portfolio '$selectedPortfolio' is empty!").showAndWait()
+
   def scatterDialog() =
     val dialog = new Dialog[String]()
     dialog.setTitle("Select Portfolio and Color")
     val portfolioChoice = new ChoiceBox[String]()
-    
-    
+
     portfolioChoice.items = getPortfolioNames
 
     val scatterColor = new ColorPicker()
-    
 
     val vbox = new VBox(10, portfolioChoice, scatterColor)
     dialog.getDialogPane.setContent(vbox)

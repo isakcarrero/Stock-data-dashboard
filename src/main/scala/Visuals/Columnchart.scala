@@ -1,3 +1,3 @@
 package Visuals
 
-class Columnchart 
+class Columnchart
