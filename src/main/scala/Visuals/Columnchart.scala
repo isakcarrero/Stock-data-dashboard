@@ -1,11 +1,11 @@
 package Visuals
 
-import Data.StockDataParsing
-import scalafx.scene.chart.{CategoryAxis, NumberAxis, BarChart, XYChart}
-import scalafx.scene.layout.{VBox, Priority}
+import Data.StockDataParser
+import scalafx.scene.chart.{BarChart, CategoryAxis, NumberAxis, XYChart}
+import scalafx.scene.layout.{Priority, VBox}
 import scalafx.scene.control.{ChoiceBox, Tooltip}
 import scalafx.collections.ObservableBuffer
-import scalafx.Includes._
+import scalafx.Includes.*
 import scalafx.application.Platform
 import scalafx.geometry.Insets
 import scalafx.scene.text.Font
@@ -15,17 +15,17 @@ import scalafx.scene.Node
 
 class Columnchart(ticker: String):
 
-  val root = new VBox:
+  private val root = new VBox:
     padding = Insets(5)
     spacing = 5
 
   /** dropdown selection menu */
-  val timeChoice = new ChoiceBox[String](ObservableBuffer("1 Week", "2 Weeks", "1 Month", "3 Months"))
+  private val timeChoice = new ChoiceBox[String](ObservableBuffer("1 Week", "2 Weeks", "1 Month", "3 Months"))
   timeChoice.setValue("1 Week")
 
-  val xAxis = new CategoryAxis()
-  val yAxis = new NumberAxis()
-  val barChart = new BarChart[String, Number](xAxis, yAxis)
+  private val xAxis = new CategoryAxis()
+  private val yAxis = new NumberAxis()
+  private val barChart = new BarChart[String, Number](xAxis, yAxis)
 
   barChart.setTitle(s"$ticker price over time")
   barChart.setCategoryGap(1)
@@ -44,7 +44,7 @@ class Columnchart(ticker: String):
   barChart.setStyle("-fx-font-size: 11px;")
 
   /** for updating bar based on selection */
-  def updateChart(period: String) =
+  private def updateChart(period: String): Unit =
     val days = period match
       case "1 Week" => 6
       case "2 Weeks" => 11
@@ -53,7 +53,7 @@ class Columnchart(ticker: String):
       case _ => 6
 
     /** gets the n recent closing prices */
-    val closingPrices = StockDataParsing.getClosingPrices(ticker, days)
+    val closingPrices = StockDataParser.getClosingPrices(ticker, days)
 
     Platform.runLater:
       barChart.getData.clear()

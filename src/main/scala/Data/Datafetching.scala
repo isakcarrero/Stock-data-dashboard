@@ -11,7 +11,7 @@ import scala.util.Success
 import scala.util.Failure
 
 class Datafetching:
-  private val APIKey = "LMJ7WY6F7CEEQUAD"
+  val APIKey = "LMJ7WY6F7CEEQUAD"
 
   /** Fetches stock data and saves it to a file in the StockAPIData folder */
   def getStockData(ticker: String) =
