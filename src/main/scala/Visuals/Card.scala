@@ -1,6 +1,6 @@
+
 package Visuals
 
-import Data.PortfolioManager
 import Data.PortfolioManager
 import scalafx.geometry.Insets
 import scalafx.scene.control.{Alert, Button, ButtonType, ChoiceBox, ColorPicker, Dialog, TextInputDialog}
@@ -50,7 +50,7 @@ class Card:
   cardGrid.add(card4, 1, 1)
 
 
-/** gets teh portfolio namnse so that they can ba diplayed */
+/** gets teh portfolio names so that they can ba displayed */
   def getPortfolioNames: ObservableBuffer[String] =
     ObservableBuffer.from(PortfolioManager.getAllPortfolios.keys.toSeq)
 
@@ -66,17 +66,22 @@ class Card:
     dialog.getDialogPane.getButtonTypes.addAll(columnChart, infoCard, pieChart, scatterPlot, ButtonType.Cancel)
 
     dialog.showAndWait() match
-      case Some(`columnChart`) => columnChartDialog("Enter stock ticker:")
+      case Some(`columnChart`) => columnChartDialog("Enter stock ticker:", targetCard)
       case Some(`infoCard`) => infoSelectionDialog("Select Portfolio for Information Card")
       case Some(`pieChart`) => pieSelectionDialog(targetCard, "Select Portfolio")
       case Some(`scatterPlot`) => scatterDialog()
       case _ =>
 
-  def columnChartDialog(ticker: String) =
+  def columnChartDialog(header: String, targetCard: StackPane) =
     val textInputDialog = new TextInputDialog()
-    textInputDialog.setTitle("Input Required")
-    textInputDialog.setHeaderText(ticker)
-    textInputDialog.showAndWait()
+    textInputDialog.setTitle("Column Chart")
+    textInputDialog.setHeaderText(header)
+
+    textInputDialog.showAndWait() match
+      case Some(ticker) =>
+        val columnChartVisual = new Columnchart(ticker)
+        targetCard.getChildren.setAll(columnChartVisual.getNode)
+      case _ =>
 
   def infoSelectionDialog(title: String) =
     val dialog = new Dialog[String]()
