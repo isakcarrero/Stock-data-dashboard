@@ -1,4 +1,4 @@
-import Data.PortfolioManager.getAllPortfolios
+import Data.PortfolioManager.{getAllPortfolios, getPortfolio}
 import Visuals.Card
 import Data.{PortfolioManager, StockData}
 import scalafx.scene.layout.*
@@ -223,6 +223,7 @@ object Main extends JFXApp3:
     createPortfolio.onAction = (e: ActionEvent) => 
       newPortfolio()
       println(getAllPortfolios)
+
 
   end start
 end Main

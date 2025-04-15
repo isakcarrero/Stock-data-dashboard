@@ -67,7 +67,7 @@ class Card:
 
     dialog.showAndWait() match
       case Some(`columnChart`) => columnChartDialog("Enter stock ticker:", targetCard)
-      case Some(`infoCard`) => infoSelectionDialog("Select Portfolio for Information Card")
+      case Some(`infoCard`) => infoSelectionDialog("Select Portfolio for Information Card", targetCard)
       case Some(`pieChart`) => pieSelectionDialog(targetCard, "Select Portfolio")
       case Some(`scatterPlot`) => scatterDialog()
       case _ =>
@@ -83,16 +83,23 @@ class Card:
         targetCard.getChildren.setAll(columnChartVisual.getNode)
       case _ =>
 
-  def infoSelectionDialog(title: String) =
+  def infoSelectionDialog(title: String, targetCard: StackPane) =
     val dialog = new Dialog[String]()
     dialog.setTitle(title)
     val portfolioChoice = new ChoiceBox[String]()
-
     portfolioChoice.items = getPortfolioNames
-
+  
     dialog.getDialogPane.setContent(portfolioChoice)
     dialog.getDialogPane.getButtonTypes.add(ButtonType.OK)
-    dialog.showAndWait()
+  
+    dialog.showAndWait() match
+      case Some(_) =>
+        val selected = portfolioChoice.getValue
+        if selected != null && selected.nonEmpty then
+          val portfolioInfoCard = new Portfolioinfo(selected)
+          targetCard.getChildren.setAll(portfolioInfoCard.card)
+      case _ =>
+
 
   def pieSelectionDialog(targetCard: StackPane, title: String) =
     val dialog = new Dialog[String]()
