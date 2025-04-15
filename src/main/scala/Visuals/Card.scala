@@ -3,7 +3,7 @@ package Visuals
 
 import Data.PortfolioManager
 import scalafx.geometry.Insets
-import scalafx.scene.control.{Alert, Button, ButtonType, ChoiceBox, ColorPicker, Dialog, TextInputDialog}
+import scalafx.scene.control.{Alert, Button, ButtonType, ChoiceBox, ColorPicker, Dialog, TextField, TextInputDialog}
 import scalafx.scene.layout.{ColumnConstraints, GridPane, RowConstraints, StackPane, VBox}
 import scalafx.collections.ObservableBuffer
 import scalafx.scene.Node
@@ -67,43 +67,63 @@ class Card:
 
     dialog.showAndWait() match
       case Some(`columnChart`) => columnChartDialog("Enter stock ticker:", targetCard)
-      case Some(`infoCard`) => infoSelectionDialog("Select Portfolio for Information Card", targetCard)
-      case Some(`pieChart`) => pieSelectionDialog(targetCard, "Select Portfolio")
+      case Some(`infoCard`) => infoSelectionDialog("Select Portfolio", targetCard)
+      case Some(`pieChart`) => pieSelectionDialog("Select Portfolio", targetCard)
       case Some(`scatterPlot`) => scatterDialog()
       case _ =>
 
-  def columnChartDialog(header: String, targetCard: StackPane) =
-    val textInputDialog = new TextInputDialog()
+  def columnChartDialog(title: String, targetCard: StackPane) =
+    /**val textInputDialog = new TextInputDialog()
     textInputDialog.setTitle("Column Chart")
-    textInputDialog.setHeaderText(header)
+    textInputDialog.setHeaderText(title)**/
 
-    textInputDialog.showAndWait() match
+    val dialog = new Dialog[String]
+    dialog.setTitle("Select Portfolio and Color")
+    dialog.setWidth(200)
+    val stockInput = new TextField():
+      promptText = "Stock Ticker (e.g., AAPL)"
+
+    val columnColor = new ColorPicker()
+
+    val vbox = new VBox(10, stockInput, columnColor)
+    dialog.getDialogPane.setContent(vbox)
+    dialog.getDialogPane.getButtonTypes.add(ButtonType.OK)
+
+    dialog.showAndWait() match
       case Some(ticker) =>
-        val columnChartVisual = new Columnchart(ticker)
+        val stockTicker = stockInput.text.value
+        val chosenColor = columnColor.value.value
+        val hexColor = String.format("#%02X%02X%02X",
+          (chosenColor.getRed * 255).toInt, 
+          (chosenColor.getGreen * 255).toInt, 
+          (chosenColor.getBlue * 255).toInt)
+        val columnChartVisual = new Columnchart(stockTicker, hexColor)
         targetCard.getChildren.setAll(columnChartVisual.getNode)
       case _ =>
 
   def infoSelectionDialog(title: String, targetCard: StackPane) =
     val dialog = new Dialog[String]()
     dialog.setTitle(title)
+    dialog.setWidth(200)
     val portfolioChoice = new ChoiceBox[String]()
     portfolioChoice.items = getPortfolioNames
-  
+
     dialog.getDialogPane.setContent(portfolioChoice)
     dialog.getDialogPane.getButtonTypes.add(ButtonType.OK)
-  
+
     dialog.showAndWait() match
       case Some(_) =>
         val selected = portfolioChoice.getValue
         if selected != null && selected.nonEmpty then
           val portfolioInfoCard = new Portfolioinfo(selected)
-          targetCard.getChildren.setAll(portfolioInfoCard.card)
+          targetCard.getChildren.setAll(portfolioInfoCard.infoCard)
       case _ =>
 
 
-  def pieSelectionDialog(targetCard: StackPane, title: String) =
+  def pieSelectionDialog(title: String, targetCard: StackPane) =
     val dialog = new Dialog[String]()
     dialog.setTitle(title)
+    dialog.setWidth(200)
     val portfolioChoice = new ChoiceBox[String]()
 
     portfolioChoice.items = getPortfolioNames
@@ -125,6 +145,7 @@ class Card:
   def scatterDialog() =
     val dialog = new Dialog[String]()
     dialog.setTitle("Select Portfolio and Color")
+    dialog.setWidth(200)
     val portfolioChoice = new ChoiceBox[String]()
 
     portfolioChoice.items = getPortfolioNames
@@ -134,4 +155,7 @@ class Card:
     val vbox = new VBox(10, portfolioChoice, scatterColor)
     dialog.getDialogPane.setContent(vbox)
     dialog.getDialogPane.getButtonTypes.add(ButtonType.OK)
-    dialog.showAndWait()
+    dialog.showAndWait() match
+      case Some(portfolio) =>
+        val selectedPortfolio = portfolioChoice.value
+        val selectedColor = scatterColor.value.toString

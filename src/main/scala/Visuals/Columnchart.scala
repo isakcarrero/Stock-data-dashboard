@@ -12,8 +12,9 @@ import scalafx.scene.text.Font
 import scalafx.geometry.Side
 import scalafx.util.Duration
 import scalafx.scene.Node
+import scalafx.scene.paint.Color
 
-class Columnchart(ticker: String):
+class Columnchart(ticker: String, color: String):
 
   private val root = new VBox:
     padding = Insets(5)
@@ -32,6 +33,9 @@ class Columnchart(ticker: String):
   barChart.setBarGap(0.5)
   barChart.setLegendVisible(false)
   barChart.setAnimated(false)
+
+
+
 
   xAxis.setLabel("Date")
   yAxis.setLabel("Closing Price (USD)")
@@ -65,11 +69,12 @@ class Columnchart(ticker: String):
         val tooltip = new Tooltip(s"Date: $date\nPrice: $price")
         tooltip.setShowDelay(Duration(100))
         series.getData.add(data)
-        
+
         /** adds tooptip for each node(bar) */
         data.nodeProperty().addListener { (_, _, node) =>
           if node != null then
             Tooltip.install(node, tooltip.delegate)
+            node.setStyle(s"-fx-bar-fill: $color ;")
         }
       }
 
