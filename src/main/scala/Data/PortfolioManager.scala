@@ -26,6 +26,8 @@ object PortfolioManager:
         true
       case None => false
 
+/** gets the information of a portfolio */
   def getPortfolio(name: String): Option[Portfolio] = portfolios.get(name)
 
+/** gets the information of all portfolios */
   def getAllPortfolios: Map[String, Portfolio] = portfolios.toMap

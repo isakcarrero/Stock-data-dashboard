@@ -83,8 +83,10 @@ class Card:
       case Some(`scatterPlot`) => scatterDialog()
       case _ =>
 
+  /** When the user selects 'Column Chart', a new dialog pops upo. The user inserts a stock ticker 
+   * and chooses a color from the ColorPicker. The method uses the inserted stock ticker and color 
+   * as parameters when creating the new Columnchart */
   def columnChartDialog(title: String, targetCard: StackPane) =
-    
     val dialog = new Dialog[String]
     dialog.setTitle("Select Portfolio and Color")
     dialog.setWidth(200)
@@ -109,6 +111,9 @@ class Card:
         targetCard.getChildren.setAll(columnChartVisual.getNode)
       case _ =>
 
+  /** When the user selects 'Information Card', a new dialog pops upo. The user chooses from a dropdown
+   * a portfolio. The method uses the selected portfolio's name as parameter when calling on the
+   * PortfolioInfo class*/
   def infoSelectionDialog(title: String, targetCard: StackPane) =
     val dialog = new Dialog[String]()
     dialog.setTitle(title)
@@ -120,14 +125,18 @@ class Card:
     dialog.getDialogPane.getButtonTypes.add(ButtonType.OK)
 
     dialog.showAndWait() match
-      case Some(_) =>
-        val selected = portfolioChoice.getValue
-        if selected != null && selected.nonEmpty then
-          val portfolioInfoCard = new Portfolioinfo(selected)
-          targetCard.getChildren.setAll(portfolioInfoCard.infoCard)
-      case _ =>
+      case Some(ButtonType.OK) =>
+        val selectedPortfolio = portfolioChoice.getValue
+        PortfolioManager.getPortfolio(selectedPortfolio) match
+          case Some(portfolio) if portfolio.stocks.nonEmpty =>
+            val portfolioInfoCard = new Portfolioinfo(selectedPortfolio)
+            targetCard.getChildren.setAll(portfolioInfoCard.infoCard)
+          case Some(_) =>
+            new Alert(AlertType.Error, s"Portfolio '$selectedPortfolio' is empty!").showAndWait()
 
-
+  /** When the user selects 'Pie Chart', a new dialog pops up. The user chooses from a dropdown
+   * a portfolio. The method uses the selected portfolio's name as parameter when calling on the
+   * Piechart class */
   def pieSelectionDialog(title: String, targetCard: StackPane) =
     val dialog = new Dialog[String]()
     dialog.setTitle(title)

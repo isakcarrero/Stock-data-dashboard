@@ -46,7 +46,7 @@ class Portfolioinfo(portfolioName: String):
   /** Creation of labels that are displayed on the info card */
   private val totalValueLabel = new Label(s"Total Value:"):
     style = "-fx-font-weight: bold; -fx-font-size: 13px;"
-  private val totalValueValueLabel = new Label(s"$totalValue"):
+  private val totalValueValueLabel = new Label(s"$$$totalValue"):
     style = "-fx-font-weight: normal; -fx-font-size: 13px; "
 
   private val weeklyGainLabel = new Label("Week's gain:"):
