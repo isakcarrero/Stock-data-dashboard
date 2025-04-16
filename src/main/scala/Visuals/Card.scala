@@ -10,7 +10,14 @@ import scalafx.scene.Node
 import scalafx.scene.chart.PieChart
 import scalafx.scene.control.Alert.AlertType
 
+/** The card grid with the cards make up the center of the rootpane. They are there in case the user
+ * wants to visualize data of specific stocks or portfolios. There are four cads where charts or info
+ * cards can be inserted. When the user is done with a chart, the user can close the chart and go back to
+ * the original state. */
+
 class Card:
+  
+  /** Layout of the cards */
   val cardGrid = new GridPane()
   cardGrid.setHgap(10)
   cardGrid.setVgap(10)
@@ -29,6 +36,7 @@ class Card:
   cardGrid.getColumnConstraints.addAll(col1, col2)
   cardGrid.getRowConstraints.addAll(row1, row2)
 
+  /** method for creating each of the cards. */
   private def createCard(text: String) =
     val card = new StackPane()
     card.setStyle("-fx-background-color: white; -fx-border-color: #d3d3d3; -fx-border-width: 1px;")
@@ -38,11 +46,11 @@ class Card:
     card.getChildren.add(button)
     card
 
-  /** creating the four cards */
-  private val card1 = createCard("Insert 1")
-  private val card2 = createCard("Insert 2")
-  private val card3 = createCard("Insert 3")
-  private val card4 = createCard("Insert 4")
+  /** Creation of the four cards */
+  private val card1 = createCard("Insert")
+  private val card2 = createCard("Insert")
+  private val card3 = createCard("Insert")
+  private val card4 = createCard("Insert")
 
   cardGrid.add(card1, 0, 0)
   cardGrid.add(card2, 1, 0)
@@ -50,10 +58,12 @@ class Card:
   cardGrid.add(card4, 1, 1)
 
 
-/** gets teh portfolio names so that they can ba displayed */
+/** Method for getting the portfolio names form the PortfolioManager class, so that they can be 
+ * listed in the dropdown lists. */
   def getPortfolioNames: ObservableBuffer[String] =
     ObservableBuffer.from(PortfolioManager.getAllPortfolios.keys.toSeq)
 
+/** Selection dialog where the user chooses what kind of chart or information they want to insert. */
   def showSelectionDialog(targetCard: StackPane) =
     val dialog = new Dialog[String]()
     dialog.setTitle("Select Display Type")
@@ -65,6 +75,7 @@ class Card:
 
     dialog.getDialogPane.getButtonTypes.addAll(columnChart, infoCard, pieChart, scatterPlot, ButtonType.Cancel)
 
+    /** Different methods get called based on the users choice */
     dialog.showAndWait() match
       case Some(`columnChart`) => columnChartDialog("Enter stock ticker:", targetCard)
       case Some(`infoCard`) => infoSelectionDialog("Select Portfolio", targetCard)
@@ -73,10 +84,7 @@ class Card:
       case _ =>
 
   def columnChartDialog(title: String, targetCard: StackPane) =
-    /**val textInputDialog = new TextInputDialog()
-    textInputDialog.setTitle("Column Chart")
-    textInputDialog.setHeaderText(title)**/
-
+    
     val dialog = new Dialog[String]
     dialog.setTitle("Select Portfolio and Color")
     dialog.setWidth(200)
@@ -130,7 +138,6 @@ class Card:
 
     dialog.getDialogPane.setContent(portfolioChoice)
     dialog.getDialogPane.getButtonTypes.add(ButtonType.OK)
-
 
     dialog.showAndWait() match
       case Some(ButtonType.OK) =>

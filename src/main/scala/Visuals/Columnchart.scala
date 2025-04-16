@@ -14,16 +14,19 @@ import scalafx.util.Duration
 import scalafx.scene.Node
 import scalafx.scene.paint.Color
 
+/** The column chart visualizes a stocks historical prices (one week, two weeks, one month three months).
+ * The user writes a stock ticker in the TextField and gives the columns a color of their choosing */
 class Columnchart(ticker: String, color: String):
 
   private val root = new VBox:
     padding = Insets(5)
     spacing = 5
 
-  /** dropdown selection menu */
+  /** Time series dropdown selection functionality, with an initial value of "1 week" */
   private val timeChoice = new ChoiceBox[String](ObservableBuffer("1 Week", "2 Weeks", "1 Month", "3 Months"))
   timeChoice.setValue("1 Week")
 
+  /** Column chart layout and design.*/
   private val xAxis = new CategoryAxis()
   private val yAxis = new NumberAxis()
   private val barChart = new BarChart[String, Number](xAxis, yAxis)
@@ -33,10 +36,7 @@ class Columnchart(ticker: String, color: String):
   barChart.setBarGap(0.5)
   barChart.setLegendVisible(false)
   barChart.setAnimated(false)
-
-
-
-
+  
   xAxis.setLabel("Date")
   yAxis.setLabel("Closing Price (USD)")
 
@@ -47,7 +47,7 @@ class Columnchart(ticker: String, color: String):
   yAxis.setTickLabelFont(new Font(10))
   barChart.setStyle("-fx-font-size: 11px;")
 
-  /** for updating bar based on selection */
+  /** Functionality for updating the column chart after a new time series is chosen */
   private def updateChart(period: String): Unit =
     val days = period match
       case "1 Week" => 6
@@ -56,21 +56,21 @@ class Columnchart(ticker: String, color: String):
       case "3 Months" => 78
       case _ => 6
 
-    /** gets the n recent closing prices */
+    /** Functionality for fetching the n latest closing prices, either form a file of form the API*/
     val closingPrices = StockDataParser.getClosingPrices(ticker, days)
 
     Platform.runLater:
       barChart.getData.clear()
       val series = new XYChart.Series[String, Number]()
 
-      /** adds each pair as a bar */
+      /** Adds each pair (date, price) as a column to the column chart */
       closingPrices.reverse.foreach { case (date, price) =>
         val data = XYChart.Data[String, Number](date, price)
         val tooltip = new Tooltip(s"Date: $date\nPrice: $price")
         tooltip.setShowDelay(Duration(100))
         series.getData.add(data)
 
-        /** adds tooptip for each node(bar) */
+        /** Adds a tooptip for each column (node)*/
         data.nodeProperty().addListener { (_, _, node) =>
           if node != null then
             Tooltip.install(node, tooltip.delegate)
@@ -85,5 +85,5 @@ class Columnchart(ticker: String, color: String):
 
   root.children = Seq(timeChoice, barChart)
 
-  /** for accessing root container as node */
+  /** For accessing root container as node */
   def getNode: Node = root
