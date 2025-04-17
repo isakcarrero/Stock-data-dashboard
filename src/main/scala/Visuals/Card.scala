@@ -2,8 +2,8 @@
 package Visuals
 
 import Data.PortfolioManager
-import scalafx.geometry.Insets
-import scalafx.scene.control.{Alert, Button, ButtonType, ChoiceBox, ColorPicker, Dialog, TextField, TextInputDialog}
+import scalafx.geometry.{Insets, Orientation}
+import scalafx.scene.control.{Alert, Button, ButtonType, ChoiceBox, ColorPicker, Dialog, SplitPane, TextField, TextInputDialog}
 import scalafx.scene.layout.{ColumnConstraints, GridPane, RowConstraints, StackPane, VBox}
 import scalafx.collections.ObservableBuffer
 import scalafx.scene.Node
@@ -17,25 +17,6 @@ import scalafx.scene.control.Alert.AlertType
 
 class Card:
   
-  /** Layout of the cards */
-  val cardGrid = new GridPane()
-  cardGrid.setHgap(10)
-  cardGrid.setVgap(10)
-  cardGrid.setPadding(Insets(10))
-
-  private val col1 = new ColumnConstraints()
-  col1.setPercentWidth(50)
-  private val col2 = new ColumnConstraints()
-  col2.setPercentWidth(50)
-
-  private val row1 = new RowConstraints()
-  row1.setPercentHeight(50)
-  private val row2 = new RowConstraints()
-  row2.setPercentHeight(50)
-
-  cardGrid.getColumnConstraints.addAll(col1, col2)
-  cardGrid.getRowConstraints.addAll(row1, row2)
-
   /** method for creating each of the cards. */
   private def createCard(text: String) =
     val card = new StackPane()
@@ -46,19 +27,31 @@ class Card:
     card.getChildren.add(button)
     card
 
-  /** Creation of the four cards */
+  /** Create the four cards */
   private val card1 = createCard("Insert")
   private val card2 = createCard("Insert")
   private val card3 = createCard("Insert")
   private val card4 = createCard("Insert")
 
-  cardGrid.add(card1, 0, 0)
-  cardGrid.add(card2, 1, 0)
-  cardGrid.add(card3, 0, 1)
-  cardGrid.add(card4, 1, 1)
+  /** SplitPane is used as it is easier to implement card resizing than with GridPane */
+  /** Horizontal split (top and bottom halves) */
+  private val topSplit = new SplitPane()
+  topSplit.setOrientation(Orientation.Horizontal)
+  topSplit.getItems.addAll(card1, card2)
+  topSplit.setDividerPositions(0.5)
 
+  private val bottomSplit = new SplitPane()
+  bottomSplit.setOrientation(Orientation.Horizontal)
+  bottomSplit.getItems.addAll(card3, card4)
+  bottomSplit.setDividerPositions(0.5)
 
-/** Method for getting the portfolio names form the PortfolioManager class, so that they can be 
+  /** Vertical split (splits top and bottom) */
+  val cardGrid = new SplitPane()
+  cardGrid.setOrientation(Orientation.Vertical)
+  cardGrid.getItems.addAll(topSplit, bottomSplit)
+  cardGrid.setDividerPositions(0.5)
+
+  /** Method for getting the portfolio names form the PortfolioManager class, so that they can be 
  * listed in the dropdown lists. */
   def getPortfolioNames: ObservableBuffer[String] =
     ObservableBuffer.from(PortfolioManager.getAllPortfolios.keys.toSeq)
@@ -80,7 +73,7 @@ class Card:
       case Some(`columnChart`) => columnChartDialog("Enter stock ticker:", targetCard)
       case Some(`infoCard`) => infoSelectionDialog("Select Portfolio", targetCard)
       case Some(`pieChart`) => pieSelectionDialog("Select Portfolio", targetCard)
-      case Some(`scatterPlot`) => scatterDialog()
+      case Some(`scatterPlot`) => scatterDialog("Select Portfolio", targetCard)
       case _ =>
 
   /** When the user selects 'Column Chart', a new dialog pops upo. The user inserts a stock ticker 
@@ -158,7 +151,7 @@ class Card:
           case Some(_) =>
             new Alert(AlertType.Error, s"Portfolio '$selectedPortfolio' is empty!").showAndWait()
 
-  def scatterDialog() =
+  def scatterDialog(title: String, targetCard: StackPane) =
     val dialog = new Dialog[String]()
     dialog.setTitle("Select Portfolio and Color")
     dialog.setWidth(200)
@@ -173,5 +166,6 @@ class Card:
     dialog.getDialogPane.getButtonTypes.add(ButtonType.OK)
     dialog.showAndWait() match
       case Some(portfolio) =>
-        val selectedPortfolio = portfolioChoice.value
+        val selectedPortfolio = portfolioChoice.getValue
         val selectedColor = scatterColor.value.toString
+
