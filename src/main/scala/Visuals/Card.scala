@@ -2,7 +2,7 @@
 package Visuals
 
 import Data.PortfolioManager
-import scalafx.geometry.{Insets, Orientation}
+import scalafx.geometry.{Insets, Orientation, Pos}
 import scalafx.scene.control.{Alert, Button, ButtonType, ChoiceBox, ColorPicker, Dialog, SplitPane, TextField, TextInputDialog}
 import scalafx.scene.layout.{ColumnConstraints, GridPane, RowConstraints, StackPane, VBox}
 import scalafx.collections.ObservableBuffer
@@ -27,6 +27,25 @@ class Card:
     card.getChildren.add(button)
     card
 
+  /** wraps chart/info with close (X) button. When the "x" is pressed, the chart gets deleted and 
+   * is replaced with a new insert button so that new charts or info can be inserted */
+  private def closeWrapper(content: Node, targetCard: StackPane): StackPane =
+    val wrapper = new StackPane()
+    wrapper.setStyle("-fx-background-color: white; -fx-border-color: #d3d3d3; -fx-border-width: 1px;")
+
+    val closeButton = new Button("\u2716")
+    closeButton.setStyle("-fx-background-color: transparent;")
+    closeButton.setOnAction(_ =>
+      val insertButton = new Button("Insert")
+      insertButton.setOnAction(_ => showSelectionDialog(targetCard))
+      targetCard.getChildren.setAll(insertButton))
+
+    StackPane.setMargin(closeButton, Insets(5))
+    StackPane.setAlignment(closeButton, Pos.TopRight)
+
+    wrapper.getChildren.addAll(content, closeButton)
+    wrapper
+    
   /** Create the four cards */
   private val card1 = createCard("Insert")
   private val card2 = createCard("Insert")
@@ -70,7 +89,8 @@ class Card:
 
     /** Different methods get called based on the users choice */
     dialog.showAndWait() match
-      case Some(`columnChart`) => columnChartDialog("Enter stock ticker:", targetCard)
+      case Some(`columnChart`) => 
+        columnChartDialog("Enter stock ticker:", targetCard)
       case Some(`infoCard`) => infoSelectionDialog("Select Portfolio", targetCard)
       case Some(`pieChart`) => pieSelectionDialog("Select Portfolio", targetCard)
       case Some(`scatterPlot`) => scatterDialog("Select Portfolio", targetCard)
@@ -101,7 +121,7 @@ class Card:
           (chosenColor.getGreen * 255).toInt, 
           (chosenColor.getBlue * 255).toInt)
         val columnChartVisual = new Columnchart(stockTicker, hexColor)
-        targetCard.getChildren.setAll(columnChartVisual.getNode)
+        targetCard.getChildren.setAll(closeWrapper(columnChartVisual.getNode, targetCard))
       case _ =>
 
   /** When the user selects 'Information Card', a new dialog pops upo. The user chooses from a dropdown
