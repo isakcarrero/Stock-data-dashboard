@@ -157,7 +157,7 @@ object Main extends JFXApp3:
                 add(datePicker, 1, 3)
 
               dialog.dialogPane().content = grid
-              dialog.dialogPane().buttonTypes = Seq(ButtonType.OK, ButtonType.Cancel)
+              dialog.dialogPane().buttonTypes = Seq(ButtonType.Cancel, ButtonType.OK)
 
               dialog.showAndWait() match
                 case Some(ButtonType.OK) =>
@@ -181,16 +181,18 @@ object Main extends JFXApp3:
                     val amount = amountTry.get
                     val price = priceTry.get
 
-                    /** ensures that pos value */
+                    /** ensures that stock price and amount are positive values */
                     if amount <= 0 then throw new IllegalArgumentException("The number of shares must be greater than zero.")
                     if price <= 0 then throw new IllegalArgumentException("The stock price must be greater than zero.")
-
+                    
+                    /** format that the stock data is saved */
                     val stock = StockData(
                       ticker = tickerField.text.value,
                       amount = sharesField.text.value.toInt,
                       price = priceField.text.value.toDouble,
                       date = datePicker.getValue.format(DateTimeFormatter.ISO_DATE))
 
+                    /** stocks get added and formated */
                     if PortfolioManager.addStockToPortfolio(name, stock) then
                       val stockLabel = new Label(stock.ticker):
                         style = "-fx-padding: 3px; -fx-font-size: 12px;"

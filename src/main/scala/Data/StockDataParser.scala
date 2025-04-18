@@ -8,9 +8,9 @@ import scala.util.Try
 import java.net.URL
 
 /** This stock data parser translates json format information into data that can
- * be used for visualization of charts and information cards. It functions with files 
- * or with Alpha Sense's API. If you are using files, then make sure you name the separate 
- * stock files as [stock ticker].json and have tem located in a file called StockAPIDataDaily 
+ * be used for visualization of charts and information cards. It functions with files
+ * or with Alpha Sense's API. If you are using files, then make sure you name the separate
+ * stock files as [stock ticker].json and have tem located in a file called StockAPIDataDaily
  * so that reading files (see row 26) works correctly, or alternatively make changes to the code
  * so that it works for you. If using API then make sure you add your personal API key on row 53*/
 object StockDataParser:
@@ -47,7 +47,7 @@ object StockDataParser:
     if !file.exists() then return ""
     val source = Source.fromFile(file)
     try source.mkString finally source.close()
-    
+
 /** Method for parsing the data from API */
   private def fetchLiveData(ticker: String): String =
     val apiKey = "LMJ7WY6F7CEEQUAD"

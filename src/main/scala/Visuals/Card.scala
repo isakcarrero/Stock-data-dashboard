@@ -89,8 +89,7 @@ class Card:
 
     /** Different methods get called based on the users choice */
     dialog.showAndWait() match
-      case Some(`columnChart`) => 
-        columnChartDialog("Enter stock ticker:", targetCard)
+      case Some(`columnChart`) => columnChartDialog("Enter stock ticker:", targetCard)
       case Some(`infoCard`) => infoSelectionDialog("Select Portfolio", targetCard)
       case Some(`pieChart`) => pieSelectionDialog("Select Portfolio", targetCard)
       case Some(`scatterPlot`) => scatterDialog("Select Portfolio", targetCard)
@@ -185,7 +184,19 @@ class Card:
     dialog.getDialogPane.setContent(vbox)
     dialog.getDialogPane.getButtonTypes.add(ButtonType.OK)
     dialog.showAndWait() match
-      case Some(portfolio) =>
+      case Some(ButtonType.OK) =>
         val selectedPortfolio = portfolioChoice.getValue
-        val selectedColor = scatterColor.value.toString
+        val chosenColor = scatterColor.value.value
+        val hexColor = String.format("#%02X%02X%02X",
+          (chosenColor.getRed * 255).toInt,
+          (chosenColor.getGreen * 255).toInt,
+          (chosenColor.getBlue * 255).toInt)
+    
+        PortfolioManager.getPortfolio(selectedPortfolio) match
+          case Some(portfolio) if portfolio.stocks.nonEmpty =>
+            val scatterVisual = new Scatterplot(selectedPortfolio, hexColor)
+            targetCard.getChildren.setAll(closeWrapper(scatterVisual.getNode, targetCard))
+          case Some(_) =>
+            new Alert(AlertType.Error, s"Portfolio '$selectedPortfolio' is empty!").showAndWait()
+
 

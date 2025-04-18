@@ -37,8 +37,6 @@ class Portfolioinfo(portfolioName: String):
 
   private val weeklyGain = BigDecimal(stockData.map(x => (x._2 - x._3) * x._4).sum).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
   private val weeklyGainPerc = BigDecimal(weeklyGain / (totalValue - weeklyGain) * 100).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
-
-
   private val numberOfStocks: Int = portfolioStocks.map(_.stocks.size).getOrElse(0)
   private val biggestAllocation: String = portfolioStocks.flatMap(_.stocks.groupBy(_.ticker).maxByOption(_._2.map(s => s.amount * s.price).sum).map(_._1)).get
 
@@ -51,7 +49,7 @@ class Portfolioinfo(portfolioName: String):
 
   private val weeklyGainLabel = new Label("Week's gain:"):
     style = "-fx-font-weight: bold; -fx-font-size: 13px;"
-  private val weeklyGainValueLabel = new Label( 
+  private val weeklyGainValueLabel = new Label(
     if weeklyGain < 0 then
       val newWeekly = weeklyGain*(-1)
       s"-$$$newWeekly ($weeklyGainPerc%)"
@@ -83,7 +81,6 @@ class Portfolioinfo(portfolioName: String):
     style = "-fx-background-color: white; -fx-border-color: red;"
     prefWidth = 400
     
-  
     /** layouting */
     val infoHeader = new Label(s"$portfolioName Info"):
       style = "-fx-font-size: 22px; -fx-font-weight: Bold;"
@@ -108,7 +105,7 @@ class Portfolioinfo(portfolioName: String):
     val content = new HBox(30):
       alignment = Center
       children = Seq(labelColumn, valueColumn)
-    
+
     val wholeContent = new VBox(10):
       alignment = Center
       children = Seq(infoHeader, content)
