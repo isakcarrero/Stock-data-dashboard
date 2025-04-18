@@ -143,7 +143,7 @@ class Card:
         PortfolioManager.getPortfolio(selectedPortfolio) match
           case Some(portfolio) if portfolio.stocks.nonEmpty =>
             val portfolioInfoCard = new Portfolioinfo(selectedPortfolio)
-            targetCard.getChildren.setAll(portfolioInfoCard.infoCard)
+            targetCard.getChildren.setAll(closeWrapper(portfolioInfoCard.infoCard, targetCard))
           case Some(_) =>
             new Alert(AlertType.Error, s"Portfolio '$selectedPortfolio' is empty!").showAndWait()
 
@@ -167,7 +167,7 @@ class Card:
         PortfolioManager.getPortfolio(selectedPortfolio) match
           case Some(portfolio) if portfolio.stocks.nonEmpty =>
             val pieChartVisual = new Piechart(selectedPortfolio)
-            targetCard.getChildren.setAll(pieChartVisual.chart)
+            targetCard.getChildren.setAll(closeWrapper(pieChartVisual.chart, targetCard))
           case Some(_) =>
             new Alert(AlertType.Error, s"Portfolio '$selectedPortfolio' is empty!").showAndWait()
 
