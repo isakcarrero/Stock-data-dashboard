@@ -33,9 +33,9 @@ class Scatterplot(portfolioName: String, color: String):
 
   /** Button for adding additional portfolios to the scatterplot */
   private val addPortfolioButton = new Button("+"):
-    style = s"-fx-font-size: 12px; -fx-background-radius: 5;"
+    style = s"-fx-font-size: 11px; -fx-background-radius: 5;"
     onAction = _ => addPortfolioDialog()
-  
+
   private val buttonBox = new HBox:
     alignment = Pos.TopLeft
     children = addPortfolioButton
@@ -43,22 +43,22 @@ class Scatterplot(portfolioName: String, color: String):
   /** Scatter chart styling and axis labels */
   scatterChart.setTitle(s"Portfolio Purchase History")
   scatterChart.setAnimated(false)
-
+  
   xAxis.setLabel("Purchase Date")
   yAxis.setLabel("Price per Share (USD)")
-  xAxis.setTickLabelFont(new Font(10))
-  yAxis.setTickLabelFont(new Font(10))
-  scatterChart.setStyle("-fx-font-size: 11px;")
+  xAxis.setTickLabelFont(new Font(8))
+  yAxis.setTickLabelFont(new Font(8))
+  scatterChart.setStyle("-fx-font-size: 9px;")
   scatterChart.setPrefWidth(900)
   scatterChart.setPrefHeight(900)
 
   /** Stores all currently displayed (portfolio name, color) pairs */
   private val displayedPortfolios = ObservableBuffer[(String, String)]()
-  
+
   displayedPortfolios += ((portfolioName, color))
   updateChart()
-  
-  root.children = Seq(buttonBox, scatterChart)
+
+  root.children = Seq(buttonBox, scatterChart) // Removed custom legend from the layout
 
   /** Dialog for adding a new portfolio with color */
   private def addPortfolioDialog(): Unit =
@@ -72,9 +72,9 @@ class Scatterplot(portfolioName: String, color: String):
       PortfolioManager.getAllPortfolios.keys.filterNot(name =>
         displayedPortfolios.map(_._1).contains(name)))
 
-   
-    val scatterColor = new ColorPicker()
 
+    val scatterColor = new ColorPicker()
+    
     val vbox = new VBox(10, portfolioChoice, scatterColor)
     dialog.getDialogPane.setContent(vbox)
     dialog.getDialogPane.getButtonTypes.add(ButtonType.OK)
@@ -95,7 +95,6 @@ class Scatterplot(portfolioName: String, color: String):
 
   /** Updates the scatterplot with all portfolios in the list */
   private def updateChart(): Unit =
-    Platform.runLater {
       scatterChart.getData.clear()
 
       /** Collects all unique purchase dates across the portfolios in the scatterplot*/
@@ -133,17 +132,16 @@ class Scatterplot(portfolioName: String, color: String):
               ))
             scatterChart.getData.add(series)
           case None => )
-    }
-
+  
   /** parseDate and formatDate are used to give the date the right form */
   private def parseDate(dateString: String): Option[LocalDate] =
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     try Some(LocalDate.parse(dateString, formatter))
     catch case _: Exception => None
-  
+
   private def formatDate(dateString: String): String =
     parseDate(dateString)
-      .map(_.format(DateTimeFormatter.ofPattern("MMM dd, yyyy")))
+      .map(_.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))) // Corrected date format
       .getOrElse(dateString)
 
   /** Creates a tooltip for each stock in the scatterplot */

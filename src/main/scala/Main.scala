@@ -103,9 +103,13 @@ object Main extends JFXApp3:
                 points.addAll(0.0, 0.0, 10.0, 0.0, 5.0, 8.0)
                 style = "-fx-fill: black;"
 
+            val deleteButton = new Button("Delete"):
+              style = "-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: red;"
+              tooltip = Tooltip("Delete Portfolio")
+
             val portfolioHeader = new HBox:
               spacing = 5
-              children = Seq(portfolioLabel, new Region { hgrow = Priority.Always }, arrowButton, addStockButton)
+              children = Seq(portfolioLabel, new Region { hgrow = Priority.Always }, arrowButton, addStockButton, deleteButton)
               style = "-fx-alignment: center-left; -fx-padding: 5px;"
 
             val stockList = new VBox:
@@ -125,6 +129,19 @@ object Main extends JFXApp3:
               isExpanded = !isExpanded
               stockList.visible = isExpanded
               stockList.managed = isExpanded
+
+            /** for deleting a portfolio */
+            deleteButton.onAction = _ =>
+              val alert = new Alert(Alert.AlertType.Confirmation):
+                title = "Delete Portfolio"
+                headerText = s"Delete portfolio '$name'?"
+                contentText = "This will permanently delete the portfolio and all its stocks."
+
+              alert.showAndWait() match
+                case Some(ButtonType.OK) =>
+                  if PortfolioManager.removePortfolio(name) then
+                    sidebarContent.children.remove(portfolioContainer)
+                case _ => ()
 
             /** dialog for adding stocks to portfolio */
             addStockButton.onAction = _ =>
@@ -184,7 +201,7 @@ object Main extends JFXApp3:
                     /** ensures that stock price and amount are positive values */
                     if amount <= 0 then throw new IllegalArgumentException("The number of shares must be greater than zero.")
                     if price <= 0 then throw new IllegalArgumentException("The stock price must be greater than zero.")
-                    
+
                     /** format that the stock data is saved */
                     val stock = StockData(
                       ticker = tickerField.text.value,
@@ -211,7 +228,7 @@ object Main extends JFXApp3:
                     case e =>
                       new Alert(Alert.AlertType.Error, s"Error: ${e.getMessage}").showAndWait()
                   }
-                case _ => 
+                case _ =>
 
             sidebarContent.children.add(portfolioContainer)
           else
@@ -222,9 +239,11 @@ object Main extends JFXApp3:
      * /**Event handling**/
      * ******************************************************************************************** */
 
-    createPortfolio.onAction = (e: ActionEvent) => 
+    createPortfolio.onAction = (e: ActionEvent) =>
       newPortfolio()
       println(getAllPortfolios)
+
+
 
 
   end start

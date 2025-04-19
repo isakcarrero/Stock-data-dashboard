@@ -17,6 +17,7 @@ class Piechart(portfolioName: String):
     case None => Map[String, Double]()
 
   val chart = new PieChart:
+    style = s"-fx-font-size: 8px;"
     title = s"$portfolioName Allocation"
     data = ObservableBuffer(portfolioData.map((stock, percentage) =>
       /** example: [Data[AAPL (68,8%),68.81330823122744] */

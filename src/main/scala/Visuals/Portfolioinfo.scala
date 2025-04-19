@@ -83,7 +83,7 @@ class Portfolioinfo(portfolioName: String):
     
     /** layouting */
     val infoHeader = new Label(s"$portfolioName Info"):
-      style = "-fx-font-size: 22px; -fx-font-weight: Bold;"
+      style = "-fx-font-size: 16px; -fx-font-weight: Bold;"
     val labelColumn = new VBox(10):
       children = Seq(
         totalValueLabel,
