@@ -90,220 +90,159 @@ object Main extends JFXApp3:
       result match
         case Some(name) =>
           if name.isEmpty then
-            new Alert(Alert.AlertType.Error, s"Portfolio name has to be non-empty.").showAndWait()
+            new Alert(Alert.AlertType.Error, "Portfolio name has to be non-empty.").showAndWait()
           else if PortfolioManager.createPortfolio(name) then
-            val portfolioLabel = new Label(name)
-            portfolioLabel.style = "-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 5px;"
-
-            val addStockButton = new Button("+"):
-              style = "-fx-font-size: 12px; -fx-font-weight: bold;"
-
-            var isExpanded = false
-
-            val arrowButton = new Button():
-              graphic = new Polygon:
-                points.addAll(0.0, 0.0, 10.0, 0.0, 5.0, 8.0)
-                style = "-fx-fill: black;"
-
-            val deleteButton = new Button("Delete"):
-              style = "-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: red;"
-              tooltip = Tooltip("Delete Portfolio")
-
-            val portfolioHeader = new HBox:
-              spacing = 5
-              children = Seq(portfolioLabel, new Region { hgrow = Priority.Always }, arrowButton, addStockButton, deleteButton)
-              style = "-fx-alignment: center-left; -fx-padding: 5px;"
-
-            val stockList = new VBox:
-              spacing = 3
-              style = "-fx-padding: 5px; -fx-background-color: white; -fx-border-color: #d3d3d3; -fx-border-width: 1px;"
-              visible = false
-              managed = false
-
-            val portfolioContainer = new VBox:
-              maxWidth = 200
-              prefHeight = 40
-              style = "-fx-border-color: #d3d3d3; -fx-border-width: 2px; -fx-background-color: white; -fx-border-radius: 3px;"
-              children = Seq(portfolioHeader, stockList)
-
-            /** for viewing stocks in portfolio */
-            arrowButton.onAction = _ =>
-              isExpanded = !isExpanded
-              stockList.visible = isExpanded
-              stockList.managed = isExpanded
-
-            /** for deleting a portfolio */
-            deleteButton.onAction = _ =>
-              val alert = new Alert(Alert.AlertType.Confirmation):
-                title = "Delete Portfolio"
-                headerText = s"Delete portfolio '$name'?"
-                contentText = "This will permanently delete the portfolio and all its stocks."
-
-              alert.showAndWait() match
-                case Some(ButtonType.OK) =>
-                  if PortfolioManager.removePortfolio(name) then
-                    sidebarContent.children.remove(portfolioContainer)
-                case _ => ()
-
-            /** dialog for adding stocks to portfolio */
-            addStockButton.onAction = _ =>
-              val dialog = new Dialog[Unit]():
-                title = s"Add Stock to $name"
-                headerText = "Enter stock details"
-
-              val tickerField = new TextField():
-                promptText = "Stock Ticker (e.g., AAPL)"
-
-              val sharesField = new TextField():
-                promptText = "Number of Shares"
-
-              val priceField = new TextField():
-                promptText = "Price per Share"
-
-              val datePicker = new DatePicker()
-
-              val grid = new GridPane():
-                hgap = 10
-                vgap = 10
-                padding = Insets(20)
-                add(new Label("Ticker:"), 0, 0)
-                add(tickerField, 1, 0)
-                add(new Label("Shares:"), 0, 1)
-                add(sharesField, 1, 1)
-                add(new Label("Price:"), 0, 2)
-                add(priceField, 1, 2)
-                add(new Label("Date:"), 0, 3)
-                add(datePicker, 1, 3)
-
-              dialog.dialogPane().content = grid
-              dialog.dialogPane().buttonTypes = Seq(ButtonType.Cancel, ButtonType.OK)
-
-              dialog.showAndWait() match
-                case Some(ButtonType.OK) =>
-                  Try {
-                    /** field control */
-                    if tickerField.text.value.isEmpty then throw new IllegalArgumentException("Please enter a stock ticker.")
-                    if sharesField.text.value.isEmpty then throw new IllegalArgumentException("Please enter the number of shares.")
-                    if priceField.text.value.isEmpty then throw new IllegalArgumentException("Please enter the stock price.")
-                    if datePicker.getValue == null then throw new IllegalArgumentException("Please select a purchase date.")
-
-                    /** this validates that the input ticker is 1-5 uppercase letters */
-                    if !tickerField.text.value.matches("^[A-Z]{1,5}$") then throw new IllegalArgumentException("The stock ticker must be between 1 and 5 uppercase letters.")
-
-                    /** if value not int or double then error will occur  */
-                    val amountTry = Try(sharesField.text.value.toInt)
-                    val priceTry = Try(priceField.text.value.toDouble)
-
-                    if amountTry.isFailure then throw new IllegalArgumentException("The number of shares must be a valid number.")
-                    if priceTry.isFailure then throw new IllegalArgumentException("The stock price must be a valid number.")
-
-                    val amount = amountTry.get
-                    val price = priceTry.get
-
-                    /** ensures that stock price and amount are positive values */
-                    if amount <= 0 then throw new IllegalArgumentException("The number of shares must be greater than zero.")
-                    if price <= 0 then throw new IllegalArgumentException("The stock price must be greater than zero.")
-
-                    /** format that the stock data is saved */
-                    val stock = StockData(
-                      ticker = tickerField.text.value,
-                      amount = sharesField.text.value.toInt,
-                      price = priceField.text.value.toDouble,
-                      date = datePicker.getValue.format(DateTimeFormatter.ISO_DATE))
-
-                    /** stocks get added and formated */
-                    if PortfolioManager.addStockToPortfolio(name, stock) then
-                      val stockLabel = new Label(stock.ticker):
-                        style = "-fx-padding: 3px; -fx-font-size: 12px;"
-                      val shareInfo = new Label(f"${stock.amount} shares @ $$${stock.price}"):
-                        style = "-fx-padding: 3px; -fx-font-size: 10px;"
-                      val stockEntry = new HBox:
-                        spacing = 10
-                        children = Seq(stockLabel, new Region { hgrow = Priority.Always }, shareInfo)
-
-                      stockList.children.add(stockEntry)
-
-                      if !isExpanded then arrowButton.fire()
-                    else
-                      new Alert(Alert.AlertType.Error, s"Failed to add stock to portfolio '$name'").showAndWait()
-                  }.recover {
-                    case e =>
-                      new Alert(Alert.AlertType.Error, s"Error: ${e.getMessage}").showAndWait()
-                  }
-                case _ =>
-
-            sidebarContent.children.add(portfolioContainer)
+            createPortfolioSB(name) 
           else
             new Alert(Alert.AlertType.Error, s"Portfolio '$name' already exists!").showAndWait()
-        case None => // User cancelled
+        case None => ()
 
     /** ********************************************************************************************
      * /**Saving an loading data**/
      * ******************************************************************************************** */
 
-    
-    def createPortfolioUI(name: String, stocks: Seq[StockData]): Unit =
+
+    def createPortfolioSB(name: String, stocks: Seq[StockData] = Seq()) =
       val portfolioLabel = new Label(name)
-      portfolioLabel.style = "-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 5px;"
-    
+      portfolioLabel.style = "-fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 5px;"
+
       val addStockButton = new Button("+"):
-        style = "-fx-font-size: 12px; -fx-font-weight: bold;"
-    
+        style = "-fx-font-size: 10px; -fx-font-weight: bold;"
+
       var isExpanded = false
-    
+
       val arrowButton = new Button():
         graphic = new Polygon:
           points.addAll(0.0, 0.0, 10.0, 0.0, 5.0, 8.0)
           style = "-fx-fill: black;"
-    
-      val deleteButton = new Button("Delete"):
-        style = "-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: red;"
+
+      val deleteButton = new Button("Del"):
+        style = "-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: red;"
         tooltip = Tooltip("Delete Portfolio")
-    
+
       val portfolioHeader = new HBox:
         spacing = 5
-        children = Seq(portfolioLabel, new Region { hgrow = Priority.Always }, arrowButton, addStockButton, deleteButton)
+        children = Seq(portfolioLabel, new Region {hgrow = Priority.Always}, arrowButton, addStockButton, deleteButton)
         style = "-fx-alignment: center-left; -fx-padding: 5px;"
-    
+
       val stockList = new VBox:
         spacing = 3
         style = "-fx-padding: 5px; -fx-background-color: white; -fx-border-color: #d3d3d3; -fx-border-width: 1px;"
         visible = false
         managed = false
-    
+
       val portfolioContainer = new VBox:
         maxWidth = 200
         prefHeight = 40
         style = "-fx-border-color: #d3d3d3; -fx-border-width: 2px; -fx-background-color: white; -fx-border-radius: 3px;"
         children = Seq(portfolioHeader, stockList)
-    
+
+      /** for viewing stocks in portfolio */
       arrowButton.onAction = _ =>
         isExpanded = !isExpanded
         stockList.visible = isExpanded
         stockList.managed = isExpanded
-    
+
+      /** for deleting a portfolio */
       deleteButton.onAction = _ =>
         val alert = new Alert(Alert.AlertType.Confirmation):
           title = "Delete Portfolio"
           headerText = s"Delete portfolio '$name'?"
           contentText = "This will permanently delete the portfolio and all its stocks."
+        
         alert.showAndWait() match
           case Some(ButtonType.OK) =>
             if PortfolioManager.removePortfolio(name) then
               sidebarContent.children.remove(portfolioContainer)
           case _ => ()
-      
-    
-      for stock <- stocks do
+
+      /** for adding stocks to portfolio */
+      def addStock(stock: StockData) =
         val stockLabel = new Label(stock.ticker):
           style = "-fx-padding: 3px; -fx-font-size: 12px;"
         val shareInfo = new Label(f"${stock.amount} shares @ $$${stock.price}%.2f"):
           style = "-fx-padding: 3px; -fx-font-size: 10px;"
         val stockEntry = new HBox:
           spacing = 10
-          children = Seq(stockLabel, new Region { hgrow = Priority.Always }, shareInfo)
+          children = Seq(stockLabel, new Region {
+            hgrow = Priority.Always
+          }, shareInfo)
         stockList.children.add(stockEntry)
-    
+
+      def openAddStockDialog() =
+        val dialog = new Dialog():
+          title = s"Add Stock to $name"
+          headerText = "Enter stock details"
+
+        val tickerField = new TextField():
+          promptText = "Stock Ticker (e.g., AAPL)"
+        
+        val sharesField = new TextField():
+          promptText = "Number of Shares"
+        
+        val priceField = new TextField():
+          promptText = "Price per Share"
+        
+        val datePicker = new DatePicker()
+
+        val grid = new GridPane():
+          hgap = 10
+          vgap = 10
+          padding = Insets(20)
+          add(new Label("Ticker:"), 0, 0)
+          add(tickerField, 1, 0)
+          add(new Label("Shares:"), 0, 1)
+          add(sharesField, 1, 1)
+          add(new Label("Price:"), 0, 2)
+          add(priceField, 1, 2)
+          add(new Label("Date:"), 0, 3)
+          add(datePicker, 1, 3)
+
+        dialog.dialogPane().content = grid
+        dialog.dialogPane().buttonTypes = Seq(ButtonType.Cancel, ButtonType.OK)
+
+        dialog.showAndWait() match
+          case Some(ButtonType.OK) =>
+            Try {
+              /** field control */
+              if tickerField.text.value.isEmpty then throw new IllegalArgumentException("Please enter a stock ticker.")
+              if sharesField.text.value.isEmpty then throw new IllegalArgumentException("Please enter the number of shares.")
+              if priceField.text.value.isEmpty then throw new IllegalArgumentException("Please enter the stock price.")
+              if datePicker.getValue == null then throw new IllegalArgumentException("Please select a purchase date.")
+
+              /** this validates that the input ticker is 1-5 uppercase letters */              
+              if !tickerField.text.value.matches("^[A-Z]{1,5}$") then throw new IllegalArgumentException("Ticker must be 1-5 uppercase letters.")
+
+              /** if value not int or double then error will occur  */
+              val amount = sharesField.text.value.toInt
+              val price = priceField.text.value.toDouble
+              
+              if amount <= 0 then throw new IllegalArgumentException("Shares must be > 0.")
+              if price <= 0 then throw new IllegalArgumentException("Price must be > 0.")
+
+              /** format that the stock data is saved */
+              val stock = StockData(
+                ticker = tickerField.text.value,
+                amount = amount,
+                price = price,
+                date = datePicker.getValue.format(DateTimeFormatter.ISO_DATE))
+
+              /** stocks get added and formated */
+              if PortfolioManager.addStockToPortfolio(name, stock) then
+                addStock(stock)
+                if !isExpanded then arrowButton.fire()
+              else
+                new Alert(Alert.AlertType.Error, s"Failed to add stock to portfolio '$name'").showAndWait()
+            }.recover {
+              case e => new Alert(Alert.AlertType.Error, s"Error: ${e.getMessage}").showAndWait()
+            }
+          case _ => ()
+
+      addStockButton.onAction = _ => openAddStockDialog()
+      
+      /** When loading data onto the dashboard this gets used */
+      for stock <- stocks do addStock(stock)
+
       sidebarContent.children.add(portfolioContainer)
 
     def saveData(window: Window): Unit =
@@ -313,7 +252,7 @@ object Main extends JFXApp3:
         val file = chooser.showSaveDialog(window)
         if file != null then
           val writer = PrintWriter(file)
-          writer.println("portfolio,ticker,date,price,amount") // CSV Header
+          writer.println("portfolio,ticker,date,price,amount") 
           val allData = PortfolioManager.getAllPortfolios
           for (portfolioName, portfolio) <- allData do
             for stock <- portfolio.stocks do
@@ -330,9 +269,9 @@ object Main extends JFXApp3:
         val dataLines = lines.tail
         PortfolioManager.clearAllPortfolios()
         sidebarContent.children.clear()
-    
+
         val portfolioStocks = scala.collection.mutable.Map[String, List[StockData]]().withDefaultValue(Nil)
-    
+
         for line <- dataLines do
           val cols = line.split(",").map(_.trim)
           if cols.length == 5 then
@@ -343,11 +282,11 @@ object Main extends JFXApp3:
             val amount = cols(4).toInt
             val stock = StockData(ticker, amount, price, date)
             portfolioStocks(portfolioName) = stock :: portfolioStocks(portfolioName)
-    
+
         for (name, stocks) <- portfolioStocks do
           PortfolioManager.createPortfolio(name)
           stocks.foreach(stock => PortfolioManager.addStockToPortfolio(name, stock))
-          createPortfolioUI(name, stocks.reverse)
+          createPortfolioSB(name, stocks.reverse)
 
     /** ********************************************************************************************
      * /**Event handling**/
