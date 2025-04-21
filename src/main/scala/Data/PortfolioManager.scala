@@ -32,7 +32,7 @@ object PortfolioManager:
 
   /** gets the information of all portfolios */
   def getAllPortfolios: Map[String, Portfolio] = portfolios.toMap
-  
+
   /** removes an entire portfolio by name */
   def removePortfolio(name: String): Boolean =
     if portfolios.contains(name) then
@@ -40,5 +40,6 @@ object PortfolioManager:
       true
     else false
 
+  /** clears all the portfolios from the Portfolio case class */
   def clearAllPortfolios(): Unit =
     portfolios.clear()

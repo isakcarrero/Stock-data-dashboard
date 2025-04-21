@@ -10,6 +10,8 @@ import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
 
+/** The Datafetching class can be used to fetch data from the API and storing it in files.
+ * It does not have any other functionality then that */
 class Datafetching:
   val APIKey = "LMJ7WY6F7CEEQUAD"
 
@@ -20,7 +22,7 @@ class Datafetching:
       val url = new URL(s"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=$ticker&apikey=$APIKey&datatype=json")
       val jsonString = Source.fromInputStream(url.openStream()).mkString
 
-      /** if you dont have  afolder already then this creates one */
+      /** if you dont have a folder already then this creates one */
       val folder = new File("StockAPIDataDaily")
       if !folder.exists() then folder.mkdir()
 
@@ -28,63 +30,6 @@ class Datafetching:
       val writer = new BufferedWriter(new FileWriter(file))
       writer.write(jsonString)
       writer.close()
-
-  /**def saveData(stage: Stage): Unit =
-    val fileChooser = new FileChooser
-    fileChooser.title = "Save Portfolio Data"
-    fileChooser.extensionFilters.add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"))
-
-    val selectedFile = fileChooser.showSaveDialog(stage)
-    if selectedFile != null then
-      val file = new File(selectedFile.getPath)
-      val writer = new BufferedWriter(new FileWriter(file))
-
-      try
-        // Write header
-        writer.write("portfolioName,ticker,amount,price,date")
-        writer.newLine()
-
-        // Write all portfolio data
-        PortfolioManager.getAllPortfolios.foreach { (_, portfolio) =>
-          portfolio.stocks.foreach { stock =>
-            writer.write(s"${portfolio.portfolioName},${stock.ticker},${stock.amount},${stock.price},${stock.date}")
-            writer.newLine()
-          }
-        }
-      finally
-        writer.close()
-
-  def loadData(stage: Stage): Unit =
-    val fileChooser = new FileChooser
-    fileChooser.title = "Load Portfolio Data"
-    fileChooser.extensionFilters.add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"))
-
-    val selectedFile = fileChooser.showOpenDialog(stage)
-    if selectedFile != null then
-      val source = Source.fromFile(selectedFile.getPath)
-      try
-        val lines = source.getLines().toVector
-        if lines.nonEmpty && lines.head == "portfolioName,ticker,amount,price,date" then
-          // Clear existing portfolios
-          PortfolioManager.portfolios.clear()
-
-          // Process each data line
-          lines.tail.foreach { line =>
-            val parts = line.split(",")
-            if parts.length == 5 then
-              val name = parts(0)
-              val ticker = parts(1)
-              val amount = parts(2).toInt
-              val price = parts(3).toDouble
-              val date = parts(4)
-
-              if !PortfolioManager.portfolios.contains(name) then
-                PortfolioManager.createPortfolio(name)
-
-              PortfolioManager.addStockToPortfolio(name, StockData(ticker, amount, price, date))
-          }
-      finally
-        source.close()**/
 
 object StockDataFetcher:
   def main(args: Array[String]): Unit =

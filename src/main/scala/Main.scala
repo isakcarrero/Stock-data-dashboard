@@ -245,6 +245,7 @@ object Main extends JFXApp3:
 
       sidebarContent.children.add(portfolioContainer)
 
+    /** this function saved the dashboard data and writes it into a CSV format file */
     def saveData(window: Window): Unit =
         val chooser = new FileChooser:
           title = "Export Portfolios"
@@ -295,9 +296,7 @@ object Main extends JFXApp3:
     createPortfolio.onAction = (e: ActionEvent) =>
       newPortfolio()
       println(getAllPortfolios)
-
-    /**importFile.onAction = _ => Data.DataFetching.loadData(stage)
-    exportFile.onAction = _ => Data.DataFetching.saveData(stage)**/
+    
     importFile.onAction = _ => loadData(stage)
     exportFile.onAction = _ => saveData(stage)
 
