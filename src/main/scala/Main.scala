@@ -11,8 +11,11 @@ import scalafx.geometry.*
 import scalafx.collections.ObservableBuffer
 import scalafx.event.EventIncludes
 import scalafx.scene.shape.Polygon
+import scalafx.stage.{FileChooser, Window}
 
 import java.time.format.DateTimeFormatter
+import java.io.{File, PrintWriter}
+import scala.io.Source
 import scala.util.*
 
 object Main extends JFXApp3:
@@ -35,10 +38,9 @@ object Main extends JFXApp3:
 
     val menu = new MenuBar
     val menuFiles = Menu("File")
-    val newFile = new MenuItem("New")
     val importFile = new MenuItem("Import")
     val exportFile = new MenuItem("Export")
-    menuFiles.items = List(newFile, importFile, exportFile)
+    menuFiles.items = List(importFile, exportFile)
 
     val portfolio = Menu("Portfolio")
     val createPortfolio = new MenuItem("Create portfolio")
@@ -236,6 +238,118 @@ object Main extends JFXApp3:
         case None => // User cancelled
 
     /** ********************************************************************************************
+     * /**Saving an loading data**/
+     * ******************************************************************************************** */
+
+    
+    def createPortfolioUI(name: String, stocks: Seq[StockData]): Unit =
+      val portfolioLabel = new Label(name)
+      portfolioLabel.style = "-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 5px;"
+    
+      val addStockButton = new Button("+"):
+        style = "-fx-font-size: 12px; -fx-font-weight: bold;"
+    
+      var isExpanded = false
+    
+      val arrowButton = new Button():
+        graphic = new Polygon:
+          points.addAll(0.0, 0.0, 10.0, 0.0, 5.0, 8.0)
+          style = "-fx-fill: black;"
+    
+      val deleteButton = new Button("Delete"):
+        style = "-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: red;"
+        tooltip = Tooltip("Delete Portfolio")
+    
+      val portfolioHeader = new HBox:
+        spacing = 5
+        children = Seq(portfolioLabel, new Region { hgrow = Priority.Always }, arrowButton, addStockButton, deleteButton)
+        style = "-fx-alignment: center-left; -fx-padding: 5px;"
+    
+      val stockList = new VBox:
+        spacing = 3
+        style = "-fx-padding: 5px; -fx-background-color: white; -fx-border-color: #d3d3d3; -fx-border-width: 1px;"
+        visible = false
+        managed = false
+    
+      val portfolioContainer = new VBox:
+        maxWidth = 200
+        prefHeight = 40
+        style = "-fx-border-color: #d3d3d3; -fx-border-width: 2px; -fx-background-color: white; -fx-border-radius: 3px;"
+        children = Seq(portfolioHeader, stockList)
+    
+      arrowButton.onAction = _ =>
+        isExpanded = !isExpanded
+        stockList.visible = isExpanded
+        stockList.managed = isExpanded
+    
+      deleteButton.onAction = _ =>
+        val alert = new Alert(Alert.AlertType.Confirmation):
+          title = "Delete Portfolio"
+          headerText = s"Delete portfolio '$name'?"
+          contentText = "This will permanently delete the portfolio and all its stocks."
+        alert.showAndWait() match
+          case Some(ButtonType.OK) =>
+            if PortfolioManager.removePortfolio(name) then
+              sidebarContent.children.remove(portfolioContainer)
+          case _ => ()
+      
+    
+      for stock <- stocks do
+        val stockLabel = new Label(stock.ticker):
+          style = "-fx-padding: 3px; -fx-font-size: 12px;"
+        val shareInfo = new Label(f"${stock.amount} shares @ $$${stock.price}%.2f"):
+          style = "-fx-padding: 3px; -fx-font-size: 10px;"
+        val stockEntry = new HBox:
+          spacing = 10
+          children = Seq(stockLabel, new Region { hgrow = Priority.Always }, shareInfo)
+        stockList.children.add(stockEntry)
+    
+      sidebarContent.children.add(portfolioContainer)
+
+    def saveData(window: Window): Unit =
+        val chooser = new FileChooser:
+          title = "Export Portfolios"
+          extensionFilters.add(FileChooser.ExtensionFilter("CSV Files", "*.csv"))
+        val file = chooser.showSaveDialog(window)
+        if file != null then
+          val writer = PrintWriter(file)
+          writer.println("portfolio,ticker,date,price,amount") // CSV Header
+          val allData = PortfolioManager.getAllPortfolios
+          for (portfolioName, portfolio) <- allData do
+            for stock <- portfolio.stocks do
+              writer.println(s"${portfolioName},${stock.ticker},${stock.date},${stock.price},${stock.amount}")
+          writer.close()
+
+    def loadData(window: Window): Unit =
+      val chooser = new FileChooser:
+        title = "Import Portfolios"
+        extensionFilters.add(FileChooser.ExtensionFilter("CSV Files", "*.csv"))
+      val file = chooser.showOpenDialog(window)
+      if file != null then
+        val lines = Source.fromFile(file).getLines().toList
+        val dataLines = lines.tail
+        PortfolioManager.clearAllPortfolios()
+        sidebarContent.children.clear()
+    
+        val portfolioStocks = scala.collection.mutable.Map[String, List[StockData]]().withDefaultValue(Nil)
+    
+        for line <- dataLines do
+          val cols = line.split(",").map(_.trim)
+          if cols.length == 5 then
+            val portfolioName = cols(0)
+            val ticker = cols(1)
+            val date = cols(2)
+            val price = cols(3).toDouble
+            val amount = cols(4).toInt
+            val stock = StockData(ticker, amount, price, date)
+            portfolioStocks(portfolioName) = stock :: portfolioStocks(portfolioName)
+    
+        for (name, stocks) <- portfolioStocks do
+          PortfolioManager.createPortfolio(name)
+          stocks.foreach(stock => PortfolioManager.addStockToPortfolio(name, stock))
+          createPortfolioUI(name, stocks.reverse)
+
+    /** ********************************************************************************************
      * /**Event handling**/
      * ******************************************************************************************** */
 
@@ -243,7 +357,10 @@ object Main extends JFXApp3:
       newPortfolio()
       println(getAllPortfolios)
 
-
+    /**importFile.onAction = _ => Data.DataFetching.loadData(stage)
+    exportFile.onAction = _ => Data.DataFetching.saveData(stage)**/
+    importFile.onAction = _ => loadData(stage)
+    exportFile.onAction = _ => saveData(stage)
 
 
   end start

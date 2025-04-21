@@ -39,3 +39,6 @@ object PortfolioManager:
       portfolios.remove(name)
       true
     else false
+
+  def clearAllPortfolios(): Unit =
+    portfolios.clear()
