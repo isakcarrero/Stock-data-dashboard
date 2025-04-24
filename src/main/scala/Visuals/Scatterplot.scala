@@ -1,8 +1,9 @@
 package Visuals
 
+import Data.StockDataParser.getClosingPrices
 import Data.{Portfolio, PortfolioManager, StockData}
 import scalafx.scene.chart.{CategoryAxis, NumberAxis, ScatterChart, XYChart}
-import scalafx.scene.control.{Button, Tooltip, ColorPicker}
+import scalafx.scene.control.{Alert, Button, ButtonType, ChoiceBox, ColorPicker, Dialog, Label, Tooltip}
 import scalafx.scene.layout.{HBox, VBox}
 import scalafx.scene.text.Font
 import scalafx.geometry.{Insets, Pos}
@@ -10,16 +11,17 @@ import scalafx.util.Duration
 import scalafx.application.Platform
 import scalafx.scene.Node
 import scalafx.scene.paint.Color
-import scalafx.Includes._
+import scalafx.Includes.*
 import scalafx.collections.ObservableBuffer
 import scalafx.scene.control.Alert.AlertType
-import scalafx.scene.control.{Alert, ButtonType, ChoiceBox, Dialog}
+import scalafx.stage.Popup
+
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 /** The scatterplot shows purchase dates and prices of stocks in a portfolio.
- * The user can add multiple portfolios in colors of their choosing.*/
-class Scatterplot(portfolioName: String, color: String):
+ * The user can add multiple portfolios.*/
+class Scatterplot(portfolioName: String):
 
   /** Root layout for the scatterplot component */
   private val root = new VBox:
@@ -43,7 +45,7 @@ class Scatterplot(portfolioName: String, color: String):
   /** Scatter chart styling and axis labels */
   scatterChart.setTitle(s"Portfolio Purchase History")
   scatterChart.setAnimated(false)
-  
+
   xAxis.setLabel("Purchase Date")
   yAxis.setLabel("Price per Share (USD)")
   xAxis.setTickLabelFont(new Font(8))
@@ -52,15 +54,15 @@ class Scatterplot(portfolioName: String, color: String):
   scatterChart.setPrefWidth(900)
   scatterChart.setPrefHeight(900)
 
-  /** Stores all currently displayed (portfolio name, color) pairs */
-  private val displayedPortfolios = ObservableBuffer[(String, String)]()
+  /** Stores all currently displayed (portfolio name) */
+  private val displayedPortfolios = ObservableBuffer[String]()
 
-  displayedPortfolios += ((portfolioName, color))
+  displayedPortfolios += portfolioName
   updateChart()
 
-  root.children = Seq(buttonBox, scatterChart) // Removed custom legend from the layout
+  root.children = Seq(buttonBox, scatterChart)
 
-  /** Dialog for adding a new portfolio with color */
+  /** Dialog for adding a new portfolio */
   private def addPortfolioDialog(): Unit =
     val dialog = new Dialog[String]()
     dialog.setTitle("Add Portfolio to Chart")
@@ -70,26 +72,17 @@ class Scatterplot(portfolioName: String, color: String):
     val portfolioChoice = new ChoiceBox[String]()
     portfolioChoice.items = ObservableBuffer.from(
       PortfolioManager.getAllPortfolios.keys.filterNot(name =>
-        displayedPortfolios.map(_._1).contains(name)))
-
-
-    val scatterColor = new ColorPicker()
+        displayedPortfolios.contains(name)))
     
-    val vbox = new VBox(10, portfolioChoice, scatterColor)
-    dialog.getDialogPane.setContent(vbox)
+    
+    dialog.getDialogPane.setContent(portfolioChoice)
     dialog.getDialogPane.getButtonTypes.add(ButtonType.OK)
     dialog.showAndWait() match
       case Some(ButtonType.OK) =>
         val selectedPortfolio = portfolioChoice.getValue
         if selectedPortfolio != null then
-          val chosenColor = scatterColor.value.value
-          val hexColor = String.format("#%02X%02X%02X",
-            (chosenColor.getRed * 255).toInt,
-            (chosenColor.getGreen * 255).toInt,
-            (chosenColor.getBlue * 255).toInt)
-
           /** Add portfolio and refresh the chart */
-          displayedPortfolios += ((selectedPortfolio, hexColor))
+          displayedPortfolios += selectedPortfolio
           updateChart()
       case _ => ()
 
@@ -98,7 +91,7 @@ class Scatterplot(portfolioName: String, color: String):
       scatterChart.getData.clear()
 
       /** Collects all unique purchase dates across the portfolios in the scatterplot*/
-      val allDates = displayedPortfolios.flatMap((name, _) =>
+      val allDates = displayedPortfolios.flatMap((name) =>
         PortfolioManager.getPortfolio(name)
           .map(_.stocks.map(_.date))
           .getOrElse(Seq.empty).distinct)
@@ -111,7 +104,7 @@ class Scatterplot(portfolioName: String, color: String):
       xAxis.setCategories(ObservableBuffer.from(sortedDates))
 
       /** For each portfolio a series with data points and tooltips gets added */
-      displayedPortfolios.foreach((currentPortfolioName, currentColor) =>
+      displayedPortfolios.foreach((currentPortfolioName) =>
         PortfolioManager.getPortfolio(currentPortfolioName) match
           case Some(portfolio) =>
             val series = new XYChart.Series[String, Number]()
@@ -124,15 +117,16 @@ class Scatterplot(portfolioName: String, color: String):
               tooltip.setShowDelay(Duration(100))
               series.getData.add(data)
 
-              /** Attach tooltip and color to each scatter node */
+              /** Attach tooltip and latest price(when clicked on) to each scatter node */
               data.nodeProperty().addListener((_, _, node) =>
                 if node != null then
                   Tooltip.install(node, tooltip.delegate)
-                  node.setStyle(s"-fx-background-color: $currentColor;")
+                  node.setOnMouseClicked(e => infoPopup(stock.ticker, e.getScreenX, e.getScreenY))
               ))
+            
             scatterChart.getData.add(series)
           case None => )
-  
+
   /** parseDate and formatDate are used to give the date the right form */
   private def parseDate(dateString: String): Option[LocalDate] =
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -141,8 +135,7 @@ class Scatterplot(portfolioName: String, color: String):
 
   private def formatDate(dateString: String): String =
     parseDate(dateString)
-      .map(_.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))) // Corrected date format
-      .getOrElse(dateString)
+      .map(_.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))).getOrElse(dateString)
 
   /** Creates a tooltip for each stock in the scatterplot */
   private def createTooltip(portfolioName: String, stock: StockData): Tooltip =
@@ -152,6 +145,18 @@ class Scatterplot(portfolioName: String, color: String):
          |Date: ${stock.date}
          |Price: $$${stock.price}
          |Shares: ${stock.amount}""".stripMargin)
+
+  /** a function for displaying the latest closing price of a datapoint */
+  private def infoPopup(ticker: String, x: Double, y: Double): Unit=
+    val latest = getClosingPrices(ticker, 1).headOption.map(_._2).getOrElse(0.0)
+    val label = new Label(s"$ticker\nLatest close: $$${f"$latest%.2f"}"):
+      style = "-fx-background-color: rgba(50, 50, 50, 0.75); -fx-text-fill: white; -fx-padding: 10px;" +
+        "-fx-font-size: 8px;-fx-background-radius: 8px; -fx-border-radius: 8px;"
+    val popup = new Popup()
+    popup.getContent.add(label)
+    popup.setAutoHide(true)
+    popup.show(scatterChart.getScene.getWindow, x + 5, y + 5)
+
 
   /** Returns root layout as a Node */
   def getNode: Node = root

@@ -177,24 +177,15 @@ class Card:
     val portfolioChoice = new ChoiceBox[String]()
 
     portfolioChoice.items = getPortfolioNames
-
-    val scatterColor = new ColorPicker()
-
-    val vbox = new VBox(10, portfolioChoice, scatterColor)
-    dialog.getDialogPane.setContent(vbox)
+    
+    dialog.getDialogPane.setContent(portfolioChoice)
     dialog.getDialogPane.getButtonTypes.add(ButtonType.OK)
     dialog.showAndWait() match
       case Some(ButtonType.OK) =>
         val selectedPortfolio = portfolioChoice.getValue
-        val chosenColor = scatterColor.value.value
-        val hexColor = String.format("#%02X%02X%02X",
-          (chosenColor.getRed * 255).toInt,
-          (chosenColor.getGreen * 255).toInt,
-          (chosenColor.getBlue * 255).toInt)
-    
         PortfolioManager.getPortfolio(selectedPortfolio) match
           case Some(portfolio) if portfolio.stocks.nonEmpty =>
-            val scatterVisual = new Scatterplot(selectedPortfolio, hexColor)
+            val scatterVisual = new Scatterplot(selectedPortfolio)
             targetCard.getChildren.setAll(closeWrapper(scatterVisual.getNode, targetCard))
           case Some(_) =>
             new Alert(AlertType.Error, s"Portfolio '$selectedPortfolio' is empty!").showAndWait()

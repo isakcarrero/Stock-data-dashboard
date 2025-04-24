@@ -25,8 +25,7 @@ class Portfolioinfo(portfolioName: String):
       val latest = getClosingPrices(ticker, 1).headOption.map(_._2)
       val weekAgo = getClosingPrices(ticker, 6).lastOption.map(_._2)
       val amount = stocks.map(_.amount).sum
-      (ticker, latest.get, weekAgo.get, amount)
-    )).get
+      (ticker, latest.get, weekAgo.get, amount))).get
 
   /********************************************************************/
   /** Calculations for the values that are displayed on the info card */
