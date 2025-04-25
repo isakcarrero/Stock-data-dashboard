@@ -8,8 +8,6 @@ import Data.PortfolioManager.getPortfolio
 import Data.StockDataParser.getClosingPrices
 import scalafx.geometry.Pos.{Center, CenterLeft}
 
-
-
 class Portfolioinfo(portfolioName: String):
 
   private val portfolioStocks = getPortfolio(portfolioName)
