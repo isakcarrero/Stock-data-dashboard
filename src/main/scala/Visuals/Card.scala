@@ -80,20 +80,51 @@ class Card:
     val dialog = new Dialog[String]()
     dialog.setTitle("Select Display Type")
 
-    val columnChart = new ButtonType("Column Chart")
-    val infoCard = new ButtonType("Information Card")
-    val pieChart = new ButtonType("Pie Chart")
-    val scatterPlot = new ButtonType("Scatter Plot")
+    val columnChartButton = new ButtonType("Column Chart")
+    val infoCardButton = new ButtonType("Information Card")
+    val pieChartButton = new ButtonType("Pie Chart")
+    val scatterPlotButton = new ButtonType("Scatter Plot")
 
-    dialog.getDialogPane.getButtonTypes.addAll(columnChart, infoCard, pieChart, scatterPlot, ButtonType.Cancel)
+    dialog.getDialogPane.getButtonTypes.addAll(columnChartButton, 
+      infoCardButton, pieChartButton, scatterPlotButton, ButtonType.Cancel)
 
     /** Different methods get called based on the users choice */
     dialog.showAndWait() match
-      case Some(`columnChart`) => columnChartDialog("Enter stock ticker:", targetCard)
-      case Some(`infoCard`) => infoSelectionDialog("Select Portfolio", targetCard)
-      case Some(`pieChart`) => pieSelectionDialog("Select Portfolio", targetCard)
-      case Some(`scatterPlot`) => scatterDialog("Select Portfolio", targetCard)
+      case Some(`columnChartButton`) => columnChartDialog("Enter stock ticker:", targetCard)
+      case Some(`infoCardButton`) => infoCard("Info Card", targetCard)
+      case Some(`pieChartButton`) => pieChart("Pie Chart", targetCard)
+      case Some(`scatterPlotButton`) => scatterPlot("Scatter Plot", targetCard)
       case _ =>
+
+  /** This functions as a dialog for choosing which portfolio to display in the Piechart,
+   * Infocard and Scatterplot. It saves the chosen portfolio as an option */
+  def portfolioSelectionDialog(title: String): Option[String] =
+    val dialog = new Dialog[String]()
+    dialog.setTitle(title)
+    dialog.setWidth(200)
+
+    val portfolioChoice = new ChoiceBox[String]()
+    portfolioChoice.items = getPortfolioNames
+    dialog.getDialogPane.setContent(portfolioChoice)
+    dialog.getDialogPane.getButtonTypes.add(ButtonType.OK)
+
+    dialog.showAndWait() match
+      case Some(ButtonType.OK) => Option(portfolioChoice.getValue)
+      case _ => None
+
+  /** This method uses the chosen portfolio from the portfolioSelectionDialog to visualize the data. */
+  def showPortfolioChart[T](title: String, targetCard: StackPane, chartBuilder: String => T, nodeExtractor: T => Node) =
+    portfolioSelectionDialog(title) match
+      case Some(name) =>
+        PortfolioManager.getPortfolio(name) match
+          case Some(p) if p.stocks.nonEmpty =>
+            val chart = chartBuilder(name)
+            val node = nodeExtractor(chart)
+            targetCard.getChildren.setAll(closeWrapper(node, targetCard))
+          case Some(_) =>
+            new Alert(AlertType.Error, s"Portfolio '$name' is empty!").showAndWait()
+          case None => 
+      case None => 
 
   /** When the user selects 'Column Chart', a new dialog pops upo. The user inserts a stock ticker 
    * and chooses a color from the ColorPicker. The method uses the inserted stock ticker and color 
@@ -126,68 +157,16 @@ class Card:
   /** When the user selects 'Information Card', a new dialog pops upo. The user chooses from a dropdown
    * a portfolio. The method uses the selected portfolio's name as parameter when calling on the
    * PortfolioInfo class*/
-  def infoSelectionDialog(title: String, targetCard: StackPane) =
-    val dialog = new Dialog[String]()
-    dialog.setTitle(title)
-    dialog.setWidth(200)
-    val portfolioChoice = new ChoiceBox[String]()
-    portfolioChoice.items = getPortfolioNames
-
-    dialog.getDialogPane.setContent(portfolioChoice)
-    dialog.getDialogPane.getButtonTypes.add(ButtonType.OK)
-
-    dialog.showAndWait() match
-      case Some(ButtonType.OK) =>
-        val selectedPortfolio = portfolioChoice.getValue
-        PortfolioManager.getPortfolio(selectedPortfolio) match
-          case Some(portfolio) if portfolio.stocks.nonEmpty =>
-            val portfolioInfoCard = new Portfolioinfo(selectedPortfolio)
-            targetCard.getChildren.setAll(closeWrapper(portfolioInfoCard.infoCard, targetCard))
-          case Some(_) =>
-            new Alert(AlertType.Error, s"Portfolio '$selectedPortfolio' is empty!").showAndWait()
-
+  def infoCard(title: String, targetCard: StackPane) =
+    showPortfolioChart(title, targetCard, name => new Portfolioinfo(name), _.infoCard)
+    
   /** When the user selects 'Pie Chart', a new dialog pops up. The user chooses from a dropdown
    * a portfolio. The method uses the selected portfolio's name as parameter when calling on the
    * Piechart class */
-  def pieSelectionDialog(title: String, targetCard: StackPane) =
-    val dialog = new Dialog[String]()
-    dialog.setTitle(title)
-    dialog.setWidth(200)
-    val portfolioChoice = new ChoiceBox[String]()
+  def pieChart(title: String, targetCard: StackPane) =
+    showPortfolioChart(title, targetCard, name => new Piechart(name), _.chart)
 
-    portfolioChoice.items = getPortfolioNames
-
-    dialog.getDialogPane.setContent(portfolioChoice)
-    dialog.getDialogPane.getButtonTypes.add(ButtonType.OK)
-
-    dialog.showAndWait() match
-      case Some(ButtonType.OK) =>
-        val selectedPortfolio = portfolioChoice.getValue
-        PortfolioManager.getPortfolio(selectedPortfolio) match
-          case Some(portfolio) if portfolio.stocks.nonEmpty =>
-            val pieChartVisual = new Piechart(selectedPortfolio)
-            targetCard.getChildren.setAll(closeWrapper(pieChartVisual.chart, targetCard))
-          case Some(_) =>
-            new Alert(AlertType.Error, s"Portfolio '$selectedPortfolio' is empty!").showAndWait()
-
-  def scatterDialog(title: String, targetCard: StackPane) =
-    val dialog = new Dialog[String]()
-    dialog.setTitle("Select Portfolio and Color")
-    dialog.setWidth(200)
-    val portfolioChoice = new ChoiceBox[String]()
-
-    portfolioChoice.items = getPortfolioNames
-    
-    dialog.getDialogPane.setContent(portfolioChoice)
-    dialog.getDialogPane.getButtonTypes.add(ButtonType.OK)
-    dialog.showAndWait() match
-      case Some(ButtonType.OK) =>
-        val selectedPortfolio = portfolioChoice.getValue
-        PortfolioManager.getPortfolio(selectedPortfolio) match
-          case Some(portfolio) if portfolio.stocks.nonEmpty =>
-            val scatterVisual = new Scatterplot(selectedPortfolio)
-            targetCard.getChildren.setAll(closeWrapper(scatterVisual.getNode, targetCard))
-          case Some(_) =>
-            new Alert(AlertType.Error, s"Portfolio '$selectedPortfolio' is empty!").showAndWait()
+  def scatterPlot(title: String, targetCard: StackPane) =
+    showPortfolioChart(title, targetCard, name => new Scatterplot(name), _.getNode)
 
 

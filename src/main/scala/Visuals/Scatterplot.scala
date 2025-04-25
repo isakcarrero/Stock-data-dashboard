@@ -91,10 +91,8 @@ class Scatterplot(portfolioName: String):
       scatterChart.getData.clear()
 
       /** Collects all unique purchase dates across the portfolios in the scatterplot*/
-      val allDates = displayedPortfolios.flatMap((name) =>
-        PortfolioManager.getPortfolio(name)
-          .map(_.stocks.map(_.date))
-          .getOrElse(Seq.empty).distinct)
+      val allDates = displayedPortfolios.flatMap(name =>
+        PortfolioManager.getPortfolio(name).map(_.stocks.map(_.date)).get)
 
       /** Sort and format the date labels for x-axis */
       val sortedDates = allDates.flatMap(dateStr =>
@@ -104,7 +102,7 @@ class Scatterplot(portfolioName: String):
       xAxis.setCategories(ObservableBuffer.from(sortedDates))
 
       /** For each portfolio a series with data points and tooltips gets added */
-      displayedPortfolios.foreach((currentPortfolioName) =>
+      displayedPortfolios.foreach(currentPortfolioName =>
         PortfolioManager.getPortfolio(currentPortfolioName) match
           case Some(portfolio) =>
             val series = new XYChart.Series[String, Number]()
@@ -121,14 +119,13 @@ class Scatterplot(portfolioName: String):
               data.nodeProperty().addListener((_, _, node) =>
                 if node != null then
                   Tooltip.install(node, tooltip.delegate)
-                  node.setOnMouseClicked(e => infoPopup(stock.ticker, e.getScreenX, e.getScreenY))
-              ))
+                  node.setOnMouseClicked(e => infoPopup(stock.ticker, e.getScreenX, e.getScreenY))))
             
             scatterChart.getData.add(series)
           case None => )
 
   /** parseDate and formatDate are used to give the date the right form */
-  private def parseDate(dateString: String): Option[LocalDate] =
+  private def parseDate(dateString: String) =
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     try Some(LocalDate.parse(dateString, formatter))
     catch case _: Exception => None
