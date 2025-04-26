@@ -17,7 +17,7 @@ import scalafx.scene.control.Alert.AlertType
 
 class Card:
 
-  case class CardState(chartType: String ="" ,portfolioName: String = "", color: String = "" )
+  case class CardState(chartType: String ="" ,portOrStock: String = "", color: String = "" )
 
   val cardStates: Array[CardState] = Array.fill(4)(CardState())
 
@@ -27,10 +27,8 @@ class Card:
       case `card2` => 1
       case `card3` => 2
       case `card4` => 3
-      case _ => -1
 
-    if index >= 0 then
-      cardStates(index) = newState
+    cardStates(index) = newState
 
   /** method for creating each of the cards. */
   private def createCard(text: String) =
@@ -53,9 +51,9 @@ class Card:
     closeButton.setOnAction(_ =>
       val insertButton = new Button("Insert")
       insertButton.setOnAction(_ => showSelectionDialog(targetCard))
-      targetCard.getChildren.setAll(insertButton))
+      targetCard.getChildren.setAll(insertButton)
 
-      updateCardState(targetCard, CardState())
+      updateCardState(targetCard, CardState()))
 
     StackPane.setMargin(closeButton, Insets(5))
     StackPane.setAlignment(closeButton, Pos.TopRight)
@@ -135,7 +133,8 @@ class Card:
 
   /** This method uses the chosen portfolio from the portfolioSelectionDialog to visualize the data as a
    * Pie Chart, Info Card or Scatter Plot. */
-  def showPortfolioChart[T](title: String, targetCard: StackPane, chartBuilder: String => T, nodeExtractor: T => Node) =
+  def showPortfolioChart[T](title: String, targetCard: StackPane, chartType: String,
+                            chartBuilder: String => T, nodeExtractor: T => Node) =
     portfolioSelectionDialog(title) match
       case Some(name) =>
         PortfolioManager.getPortfolio(name) match
@@ -143,11 +142,8 @@ class Card:
             val chart = chartBuilder(name)
             val node = nodeExtractor(chart)
             targetCard.getChildren.setAll(closeWrapper(node, targetCard))
-            updateCardState(targetCard, CardState(name))
-            println(chart)
-            println(cardStates(0))
-            println(cardStates(3))
-            println(cardStates(2))
+            updateCardState(targetCard, CardState(chartType, name))
+
           case Some(_) =>
             new Alert(AlertType.Error, s"Portfolio '$name' is empty!").showAndWait()
           case None =>
@@ -182,23 +178,23 @@ class Card:
         val columnChartVisual = new Columnchart(stockTicker, hexColor)
         targetCard.getChildren.setAll(closeWrapper(columnChartVisual.getNode, targetCard))
 
-        updateCardState(targetCard, CardState("ColumnChart", "stockTicker", "hexColor"))
+        updateCardState(targetCard, CardState("ColumnChart", stockTicker, hexColor))
       case _ =>
 
   /** This is the method for visualizing the Info Card. It uses the showPortfolioChart
    * to do so*/
   def infoCard(title: String, targetCard: StackPane) =
-    showPortfolioChart(title, targetCard, name => new Portfolioinfo(name), _.infoCard)
+    showPortfolioChart(title, targetCard, "infoCard", name => new Portfolioinfo(name), _.infoCard)
 
   /** This is the method for visualizing the Pie Chart. It uses the showPortfolioChart
    * to do so*/
   def pieChart(title: String, targetCard: StackPane) =
-    showPortfolioChart(title, targetCard, name => new Piechart(name), _.chart)
+    showPortfolioChart(title, targetCard, "pieChart", name => new Piechart(name), _.chart)
 
   /** This is the method for visualizing the Scatter Plot. It uses the showPortfolioChart
    * to do so*/
   def scatterPlot(title: String, targetCard: StackPane) =
-    showPortfolioChart(title, targetCard, name => new Scatterplot(name), _.getNode)
+    showPortfolioChart(title, targetCard, "scatterPlot", name => new Scatterplot(name), _.getNode)
     println(targetCard)
 
 
