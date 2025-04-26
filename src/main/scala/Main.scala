@@ -73,7 +73,7 @@ object Main extends JFXApp3:
     scrollPane.setMaxWidth(200)
     rootPane.left = scrollPane
 
-    rootPane.center = Card().cardGrid
+    rootPane.center = Card.cardGrid
 
     /** ********************************************************************************************
      * /**Menubar methods**/
@@ -92,7 +92,7 @@ object Main extends JFXApp3:
           if name.isEmpty then
             new Alert(Alert.AlertType.Error, "Portfolio name has to be non-empty.").showAndWait()
           else if PortfolioManager.createPortfolio(name) then
-            createPortfolioSB(name) 
+            createPortfolioSB(name)
           else
             new Alert(Alert.AlertType.Error, s"Portfolio '$name' already exists!").showAndWait()
         case None => ()
@@ -149,7 +149,7 @@ object Main extends JFXApp3:
           title = "Delete Portfolio"
           headerText = s"Delete portfolio '$name'?"
           contentText = "This will permanently delete the portfolio and all its stocks."
-        
+
         alert.showAndWait() match
           case Some(ButtonType.OK) =>
             if PortfolioManager.removePortfolio(name) then
@@ -176,13 +176,13 @@ object Main extends JFXApp3:
 
         val tickerField = new TextField():
           promptText = "Stock Ticker (e.g., AAPL)"
-        
+
         val sharesField = new TextField():
           promptText = "Number of Shares"
-        
+
         val priceField = new TextField():
           promptText = "Price per Share"
-        
+
         val datePicker = new DatePicker()
 
         val grid = new GridPane():
@@ -210,13 +210,13 @@ object Main extends JFXApp3:
               if priceField.text.value.isEmpty then throw new IllegalArgumentException("Please enter the stock price.")
               if datePicker.getValue == null then throw new IllegalArgumentException("Please select a purchase date.")
 
-              /** this validates that the input ticker is 1-5 uppercase letters */              
+              /** this validates that the input ticker is 1-5 uppercase letters */
               if !tickerField.text.value.matches("^[A-Z]{1,5}$") then throw new IllegalArgumentException("Ticker must be 1-5 uppercase letters.")
 
               /** if value not int or double then error will occur  */
               val amount = sharesField.text.value.toInt
               val price = priceField.text.value.toDouble
-              
+
               if amount <= 0 then throw new IllegalArgumentException("Shares must be > 0.")
               if price <= 0 then throw new IllegalArgumentException("Price must be > 0.")
 
@@ -239,7 +239,7 @@ object Main extends JFXApp3:
           case _ => ()
 
       addStockButton.onAction = _ => openAddStockDialog()
-      
+
       /** When loading data onto the dashboard this gets used */
       for stock <- stocks do addStock(stock)
 
@@ -247,18 +247,27 @@ object Main extends JFXApp3:
 
     /** this function saved the dashboard data and writes it into a CSV format file */
     def saveData(window: Window): Unit =
-        val chooser = new FileChooser:
-          title = "Export Portfolios"
-          extensionFilters.add(FileChooser.ExtensionFilter("CSV Files", "*.csv"))
-        val file = chooser.showSaveDialog(window)
-        if file != null then
-          val writer = PrintWriter(file)
-          writer.println("portfolio,ticker,date,price,amount") 
-          val allData = PortfolioManager.getAllPortfolios
-          for (portfolioName, portfolio) <- allData do
-            for stock <- portfolio.stocks do
-              writer.println(s"${portfolioName},${stock.ticker},${stock.date},${stock.price},${stock.amount}")
-          writer.close()
+      val chooser = new FileChooser:
+        title = "Export Data"
+        extensionFilters.add(FileChooser.ExtensionFilter("CSV Files", "*.csv"))
+      val file = chooser.showSaveDialog(window)
+      if (file != null) then
+        val writer = PrintWriter(file)
+        
+        writer.println("portfolio,ticker,date,price,amount")
+        val allData = PortfolioManager.getAllPortfolios
+        for (portfolioName, portfolio) <- allData do
+          for stock <- portfolio.stocks do
+            writer.println(s"${portfolioName},${stock.ticker},${stock.date},${stock.price},${stock.amount}")
+        
+        writer.println("chartType,portOrStock,color") 
+          val cardState = Card.cardStates(i)
+          writer.println(s"$cardState")
+
+
+        writer.close()
+
+
 
     def loadData(window: Window): Unit =
       val chooser = new FileChooser:
@@ -296,7 +305,7 @@ object Main extends JFXApp3:
     createPortfolio.onAction = (e: ActionEvent) =>
       newPortfolio()
       println(getAllPortfolios)
-    
+
     importFile.onAction = _ => loadData(stage)
     exportFile.onAction = _ => saveData(stage)
 

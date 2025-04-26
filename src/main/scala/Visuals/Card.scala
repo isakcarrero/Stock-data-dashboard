@@ -15,7 +15,7 @@ import scalafx.scene.control.Alert.AlertType
  * cards can be inserted. When the user is done with a chart, the user can close the chart and go back to
  * the original state. */
 
-class Card:
+object Card:
 
   case class CardState(chartType: String ="" ,portOrStock: Any = "", color: String = "" )
 
@@ -121,6 +121,7 @@ class Card:
     val guideText = new Label("Choose a portfolio:")
     val portfolioChoice = new ChoiceBox[String]()
     portfolioChoice.items = getPortfolioNames
+
     val content = new VBox():
       children = Seq(guideText, portfolioChoice)
       prefWidth = 200
@@ -143,7 +144,10 @@ class Card:
             val node = nodeExtractor(chart)
             targetCard.getChildren.setAll(closeWrapper(node, targetCard))
             updateCardState(targetCard, CardState(chartType, name))
-            println(cardStates)
+            println("cardStates(0) =" + cardStates(0))
+            println("cardStates(1) =" + cardStates(1))
+            println("cardStates(2) =" + cardStates(2))
+            println("cardStates(3) =" + cardStates(3))
           case Some(_) =>
             new Alert(AlertType.Error, s"Portfolio '$name' is empty!").showAndWait()
           case None =>
