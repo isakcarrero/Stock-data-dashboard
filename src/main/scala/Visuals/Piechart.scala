@@ -24,4 +24,3 @@ class Piechart(portfolioName: String):
     data = ObservableBuffer(portfolioData.map((stock, percentage) =>
       /** example: [Data[AAPL (68,8%),68.81330823122744] */
       PieChart.Data(s"$stock (${"%.1f".format(percentage)}%)", percentage)).toSeq: _*)
-    println(data)

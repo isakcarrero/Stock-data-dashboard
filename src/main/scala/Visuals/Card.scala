@@ -42,7 +42,7 @@ object Card:
 
   /** wraps chart/info with close (X) button. When the "x" is pressed, the chart gets deleted and
    * is replaced with a new insert button so that new charts or info can be inserted */
-  private def closeWrapper(content: Node, targetCard: StackPane): StackPane =
+  def closeWrapper(content: Node, targetCard: StackPane): StackPane =
     val wrapper = new StackPane()
     wrapper.setStyle("-fx-background-color: white; -fx-border-color: #d3d3d3; -fx-border-width: 1px;")
 
@@ -62,10 +62,10 @@ object Card:
     wrapper
 
   /** Create the four cards */
-  private val card1 = createCard("Insert")
-  private val card2 = createCard("Insert")
-  private val card3 = createCard("Insert")
-  private val card4 = createCard("Insert")
+  val card1 = createCard("Insert")
+  val card2 = createCard("Insert")
+  val card3 = createCard("Insert")
+  val card4 = createCard("Insert")
 
   /** SplitPane is used as it is easier to implement card resizing than with GridPane */
   /** Horizontal split (top and bottom halves) */
