@@ -54,10 +54,14 @@ class Scatterplot(portfolioName: String):
   scatterChart.setPrefWidth(900)
   scatterChart.setPrefHeight(900)
 
+  /** Callback function for adding portfolios to the chart */
+  var onPortfoliosAdd: Seq[String] => Unit = _ => ()
+  
   /** Stores all currently displayed (portfolio name) */
-  private val displayedPortfolios = ObservableBuffer[String]()
+  val displayedPortfolios = ObservableBuffer[String]()
 
   displayedPortfolios += portfolioName
+  onPortfoliosAdd(displayedPortfolios.toSeq)
   updateChart()
 
   root.children = Seq(buttonBox, scatterChart)
@@ -73,8 +77,8 @@ class Scatterplot(portfolioName: String):
     portfolioChoice.items = ObservableBuffer.from(
       PortfolioManager.getAllPortfolios.keys.filterNot(name =>
         displayedPortfolios.contains(name)))
-    
-    
+
+
     dialog.getDialogPane.setContent(portfolioChoice)
     dialog.getDialogPane.getButtonTypes.add(ButtonType.OK)
     dialog.showAndWait() match
@@ -83,6 +87,7 @@ class Scatterplot(portfolioName: String):
         if selectedPortfolio != null then
           /** Add portfolio and refresh the chart */
           displayedPortfolios += selectedPortfolio
+          onPortfoliosAdd(displayedPortfolios.toSeq)
           updateChart()
       case _ => ()
 
@@ -90,11 +95,13 @@ class Scatterplot(portfolioName: String):
   private def updateChart(): Unit =
       scatterChart.getData.clear()
 
-      /** Collects all unique purchase dates across the portfolios in the scatterplot*/
+      /** Collects all unique purchase dates across the portfolios in the scatterplot.
+       * format: [2024-04-19, 2023-07-20, 2025-04-13]*/
       val allDates = displayedPortfolios.flatMap(name =>
         PortfolioManager.getPortfolio(name).map(_.stocks.map(_.date)).get)
 
-      /** Sort and format the date labels for x-axis */
+      /** Sort and format the date labels for x-axis
+       * format: [Jul 20, 2023, Apr 19, 2024, Apr 13, 2025]*/
       val sortedDates = allDates.flatMap(dateStr =>
         parseDate(dateStr).map(parsedDate => (parsedDate, dateStr))
       ).sortBy(_._1).map((_, dateStr) => formatDate(dateStr))
@@ -120,7 +127,7 @@ class Scatterplot(portfolioName: String):
                 if node != null then
                   Tooltip.install(node, tooltip.delegate)
                   node.setOnMouseClicked(e => infoPopup(stock.ticker, e.getScreenX, e.getScreenY))))
-            
+
             scatterChart.getData.add(series)
           case None => )
 
@@ -153,7 +160,6 @@ class Scatterplot(portfolioName: String):
     popup.getContent.add(label)
     popup.setAutoHide(true)
     popup.show(scatterChart.getScene.getWindow, x + 5, y + 5)
-
 
   /** Returns root layout as a Node */
   def getNode: Node = root

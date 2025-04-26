@@ -17,7 +17,7 @@ import scalafx.scene.control.Alert.AlertType
 
 class Card:
 
-  case class CardState(chartType: String ="" ,portOrStock: String = "", color: String = "" )
+  case class CardState(chartType: String ="" ,portOrStock: Any = "", color: String = "" )
 
   val cardStates: Array[CardState] = Array.fill(4)(CardState())
 
@@ -143,7 +143,7 @@ class Card:
             val node = nodeExtractor(chart)
             targetCard.getChildren.setAll(closeWrapper(node, targetCard))
             updateCardState(targetCard, CardState(chartType, name))
-
+            println(cardStates)
           case Some(_) =>
             new Alert(AlertType.Error, s"Portfolio '$name' is empty!").showAndWait()
           case None =>
@@ -194,7 +194,12 @@ class Card:
   /** This is the method for visualizing the Scatter Plot. It uses the showPortfolioChart
    * to do so*/
   def scatterPlot(title: String, targetCard: StackPane) =
-    showPortfolioChart(title, targetCard, "scatterPlot", name => new Scatterplot(name), _.getNode)
-    println(targetCard)
+    showPortfolioChart(title, targetCard, "scatterPlot",
+      name =>
+        val plot = new Scatterplot(name)
+        plot.onPortfoliosAdd = portfolios => updateCardState(targetCard, CardState("scatterPlot", portfolios))
+        plot,
+      _.getNode)
+
 
 
