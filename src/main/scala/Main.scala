@@ -11,12 +11,14 @@ import scalafx.geometry.*
 import scalafx.collections.ObservableBuffer
 import scalafx.event.EventIncludes
 import scalafx.scene.shape.Polygon
-import scalafx.stage.{FileChooser, Window}
+import scalafx.stage.{FileChooser, Popup, Window}
 
 import java.time.format.DateTimeFormatter
 import java.io.{File, PrintWriter}
+import scala.collection.mutable
 import scala.io.Source
 import scala.util.*
+import scala.collection.mutable.Map
 
 object Main extends JFXApp3:
 
@@ -55,6 +57,34 @@ object Main extends JFXApp3:
 
     menu.menus = List(menuFiles, portfolio, help)
     rootPane.top = menu
+
+
+     /**The help text in the menu bar**/
+     /********************************************************************************************/
+    val addPortfolioText =
+      "Adding a portfolio: "
+        + "\n1: Press the button named 'Portfolio'."
+        + "\n2: Press 'Create portfolio'."
+        + "\n3: Enter a unique name for your new portfolio."
+
+    val addStockText =
+      "Adding a stock to your portfolio: "
+        + "\n1: Press the '+' sign next to the portfolio to which you wan to adda a stock "
+        + "\n2: Insert the stock symbol (if you don't know it, google it!)"
+        + "\n3: Insert the amount you have bought adn the price per share."
+        + "\n4: Finally choose the date when it was bought form the date picker"
+
+
+    val removePortfolioText =
+      "Removing a portfolio "
+        + "\n1: Press the button with red 'Del' text on it "
+        + "\n2: Press OK on the alert message"
+    
+    val addChartText =
+      "Inserting chart or data: "
+        + "\n1: Press the 'Insert' button on the card where you wan the data."
+        + "\n2: Choose what you want to display."
+        + "\n3: Finally insert/choose the asked data"
 
     /** ********************************************************************************************
      * /**Sidebar and card grid**/
@@ -98,10 +128,20 @@ object Main extends JFXApp3:
             new Alert(Alert.AlertType.Error, s"Portfolio '$name' already exists!").showAndWait()
         case None => ()
 
-    /** ********************************************************************************************
-     * /**Saving an loading data**/
-     * ******************************************************************************************** */
+    def displayHelpText(text: String): Unit =
+      val label = new Label(text):
+        style = "-fx-background-color: #ADD8E6; -fx-padding: 15px;-fx-border-color: #4682B4;-fx-border-width: 2px; " +
+          "-fx-font-size: 14px;"
 
+      val popup = new Popup()
+      popup.content.add(label)
+      popup.autoHide = true
+      popup.show(stage)
+      popup.x = (stage.width.value - label.width.value) / 2
+      popup.y = (stage.height.value - label.height.value) / 2
+    /** ********************************************************************************************
+     * /* Method for creating portfolio and adding stock to portfolios**/
+     * ******************************************************************************************** */
 
     def createPortfolioSB(name: String, stocks: Seq[StockData] = Seq()) =
       val portfolioLabel = new Label(name)
@@ -160,9 +200,9 @@ object Main extends JFXApp3:
       /** for adding stocks to portfolio */
       def addStock(stock: StockData) =
         val stockLabel = new Label(stock.ticker):
-          style = "-fx-padding: 3px; -fx-font-size: 12px;"
-        val shareInfo = new Label(f"${stock.amount} shares @ $$${stock.price}%.2f"):
           style = "-fx-padding: 3px; -fx-font-size: 10px;"
+        val shareInfo = new Label(f"${stock.amount} shares @ $$${stock.price}%.2f"):
+          style = "-fx-padding: 3px; -fx-font-size: 8px;"
         val stockEntry = new HBox:
           spacing = 10
           children = Seq(stockLabel, new Region {
@@ -175,15 +215,13 @@ object Main extends JFXApp3:
           title = s"Add Stock to $name"
           headerText = "Enter stock details"
 
+        /** contents in the dialog */
         val tickerField = new TextField():
           promptText = "Stock Ticker (e.g., AAPL)"
-
         val sharesField = new TextField():
           promptText = "Number of Shares"
-
         val priceField = new TextField():
           promptText = "Price per Share"
-
         val datePicker = new DatePicker()
 
         val grid = new GridPane():
@@ -246,6 +284,10 @@ object Main extends JFXApp3:
 
       sidebarContent.children.add(portfolioContainer)
 
+    /** ********************************************************************************************
+     * /**Methods for saving and loading data form and to the dashboard**/
+     * ******************************************************************************************** */
+
     /** this function saved the dashboard data and writes it into a CSV format file */
     def saveData(window: Window): Unit =
       val chooser = new FileChooser:
@@ -265,12 +307,14 @@ object Main extends JFXApp3:
         for (i <- Card.cardStates.indices) do
           val cardState = Card.cardStates(i)
           val portOrStockStr = cardState.portOrStock match
-            case list: List[String] => list.mkString(",")
+            case list: List[String] =>
+              if cardState.chartType == "scatterPlot" then list.mkString("|")
+              else list.mkString(",")
             case other => other.toString
           writer.println(s"${cardState.chartType},${portOrStockStr},${cardState.color}")
         writer.close()
 
-    /** Method for loading data. The method uses a csv file form the users files to display a 
+    /** Method for loading data. The method uses a csv file form the users files to display a
      * saved dasboard. */
     def loadData(window: Window): Unit =
       val chooser = new FileChooser:
@@ -291,7 +335,7 @@ object Main extends JFXApp3:
         sidebarContent.children.clear()
 
         /** for storing the stocks */
-        val portfolioStocks = scala.collection.mutable.Map[String, List[StockData]]().withDefaultValue(Nil)
+        val portfolioStocks = mutable.Map[String, List[StockData]]().withDefaultValue(Nil)
 
         /** getting the data for each portfolio and storing it in our map */
         for line <- dataLines do
@@ -324,10 +368,14 @@ object Main extends JFXApp3:
             if cols.length >= 3 && cols(0).nonEmpty then
               val chartType = cols(0)
               val portOrStock =
-                /** separate operation for scatterpllot and others. */
-                if cols(1).contains(",") then cols(1).split(",").toList
-                else if cols(1).nonEmpty then cols(1)
-                else ""
+                if chartType == "scatterPlot" && cols(1).contains("|") then
+                  cols(1).split("\\|").toList
+                else if cols(1).contains(",") then
+                  cols(1).split(",").toList
+                else if cols(1).nonEmpty then
+                  cols(1)
+                else
+                  ""
               val color = if cols.length >= 3 then cols(2) else ""
 
               /** We update the card states */
@@ -346,10 +394,19 @@ object Main extends JFXApp3:
                     cards(i).getChildren.setAll(Card.closeWrapper(pieChartVisual.chart, cards(i)))
 
                 case "scatterPlot" =>
+                  println(portOrStock)
                   if portOrStock.toString.nonEmpty then
-                    val scatterPlotVisual = new Scatterplot(portOrStock.toString)
+                    val scatterPlotVisual = portOrStock match
+                      case list: List[String] => new Scatterplot(list.head)
+                      case single: String => new Scatterplot(single)
+                    
+                    portOrStock match
+                      case list: List[String] => list.tail.foreach(scatterPlotVisual.displayedPortfolios += _)
+                      case _ =>
+
                     scatterPlotVisual.onPortfoliosAdd = portfolios =>
                       Card.cardStates(i) = Card.CardState("scatterPlot", portfolios)
+                    scatterPlotVisual.updateChart()
                     cards(i).getChildren.setAll(Card.closeWrapper(scatterPlotVisual.getNode, cards(i)))
 
                 case "infoCard" =>
@@ -370,12 +427,19 @@ object Main extends JFXApp3:
      * /**Event handling**/
      * ******************************************************************************************** */
 
+    /** in the menu bar */
     createPortfolio.onAction = (e: ActionEvent) =>
       newPortfolio()
-      println(getAllPortfolios)
+    addPortfolio.onAction = (e: ActionEvent) => displayHelpText(addPortfolioText)
+    addStock.onAction = (e: ActionEvent) => displayHelpText(addStockText)
+    removePortfolio.onAction = (e: ActionEvent) => displayHelpText(removePortfolioText)
+    addChart.onAction = (e: ActionEvent) => displayHelpText(addChartText)
 
+    /** for importing and exporting */
     importFile.onAction = _ => loadData(stage)
     exportFile.onAction = _ => saveData(stage)
+
+
 
 
   end start

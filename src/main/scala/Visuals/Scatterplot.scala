@@ -92,7 +92,7 @@ class Scatterplot(portfolioName: String):
       case _ => ()
 
   /** Updates the scatterplot with all portfolios in the list */
-  private def updateChart(): Unit =
+  def updateChart(): Unit =
       scatterChart.getData.clear()
 
       /** Collects all unique purchase dates across the portfolios in the scatterplot.
