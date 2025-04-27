@@ -75,7 +75,7 @@ class Portfolioinfo(portfolioName: String):
     style = "-fx-font-weight: normal; -fx-font-size: 13px; "
 
   val infoCard = new StackPane:
-    style = "-fx-background-color: white; -fx-border-color: red;"
+    
     prefWidth = 400
     
     /** layouting */
@@ -106,5 +106,6 @@ class Portfolioinfo(portfolioName: String):
     val wholeContent = new VBox(10):
       alignment = Center
       children = Seq(infoHeader, content)
+      style = "-fx-background-color: white; -fx-border-color: gray; -fx-border-width: 5px"
 
     children.add(wholeContent)

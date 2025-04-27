@@ -17,10 +17,15 @@ import scalafx.scene.control.Alert.AlertType
 
 object Card:
 
+  /** A case class for saving the current state of each card */
   case class CardState(chartType: String ="" ,portOrStock: Any = "", color: String = "" )
-
+  
+  /** the card states of each card gets stored here. This val is important as it helps with getting
+   * the location of the charts when saving them, and ensuring that they are inserted into the right 
+   * card when loading data from a file*/
   val cardStates: Array[CardState] = Array.fill(4)(CardState())
 
+  /** this method is used to update the state of a card when information is added or removed*/
   private def updateCardState(targetCard: StackPane, newState: CardState): Unit =
     val index = targetCard match
       case `card1` => 0
@@ -48,12 +53,20 @@ object Card:
 
     val closeButton = new Button("\u2716")
     closeButton.setStyle("-fx-background-color: transparent;")
+    
+    /** Alert to make sure user understand what thy are doing */
     closeButton.setOnAction(_ =>
-      val insertButton = new Button("Insert")
-      insertButton.setOnAction(_ => showSelectionDialog(targetCard))
-      targetCard.getChildren.setAll(insertButton)
+      val alert = new Alert(Alert.AlertType.Warning)
+      alert.setTitle("Confirm Removal")
+      alert.setHeaderText("Are you sure you want to remove this content?")
+      alert.setContentText("The current information will be removed.")
 
-      updateCardState(targetCard, CardState()))
+      alert.showAndWait() match
+        case Some(ButtonType.OK) =>
+          val insertButton = new Button("Insert")
+          insertButton.setOnAction(_ => showSelectionDialog(targetCard))
+          targetCard.getChildren.setAll(insertButton)
+          updateCardState(targetCard, CardState()))
 
     StackPane.setMargin(closeButton, Insets(5))
     StackPane.setAlignment(closeButton, Pos.TopRight)

@@ -4,7 +4,7 @@ import Data.PortfolioManager.getPortfolio
 import scalafx.scene.chart.PieChart
 import scalafx.collections.ObservableBuffer
 
-/** The piechart visualizes a portfolios stock allocation. It calculates the weighted percentages of the 
+/** The piechart visualizes a portfolios stock allocation. It calculates the weighted percentages of the
  * stocks and converts them into percentages that are then displayed in te chart */
 class Piechart(portfolioName: String):
 

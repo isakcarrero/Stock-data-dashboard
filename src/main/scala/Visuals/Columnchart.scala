@@ -43,9 +43,9 @@ class Columnchart(ticker: String, color: String):
   barChart.setPrefWidth(900)
   barChart.setPrefHeight(900)
 
-  xAxis.setTickLabelFont(new Font(10))
-  yAxis.setTickLabelFont(new Font(10))
-  barChart.setStyle("-fx-font-size: 11px;")
+  xAxis.setTickLabelFont(new Font(8))
+  yAxis.setTickLabelFont(new Font(8))
+  barChart.setStyle("-fx-font-size: 9px;")
 
   /** Functionality for updating the column chart after a new time series is chosen */
   private def updateChart(period: String): Unit =

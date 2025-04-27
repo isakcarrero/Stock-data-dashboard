@@ -58,7 +58,6 @@ object Main extends JFXApp3:
     menu.menus = List(menuFiles, portfolio, help)
     rootPane.top = menu
 
-
      /**The help text in the menu bar**/
      /********************************************************************************************/
     val addPortfolioText =
@@ -79,7 +78,7 @@ object Main extends JFXApp3:
       "Removing a portfolio "
         + "\n1: Press the button with red 'Del' text on it "
         + "\n2: Press OK on the alert message"
-    
+
     val addChartText =
       "Inserting chart or data: "
         + "\n1: Press the 'Insert' button on the card where you wan the data."
@@ -240,42 +239,40 @@ object Main extends JFXApp3:
         dialog.dialogPane().content = grid
         dialog.dialogPane().buttonTypes = Seq(ButtonType.Cancel, ButtonType.OK)
 
-        dialog.showAndWait() match
+        dialog.showAndWait() match 
           case Some(ButtonType.OK) =>
-            Try {
-              /** field control */
-              if tickerField.text.value.isEmpty then throw new IllegalArgumentException("Please enter a stock ticker.")
-              if sharesField.text.value.isEmpty then throw new IllegalArgumentException("Please enter the number of shares.")
-              if priceField.text.value.isEmpty then throw new IllegalArgumentException("Please enter the stock price.")
-              if datePicker.getValue == null then throw new IllegalArgumentException("Please select a purchase date.")
+            val tickerVal = tickerField.text.value
+            val sharesVal = sharesField.text.value
+            val priceVal = priceField.text.value
 
-              /** this validates that the input ticker is 1-5 uppercase letters */
-              if !tickerField.text.value.matches("^[A-Z]{1,5}$") then throw new IllegalArgumentException("Ticker must be 1-5 uppercase letters.")
+            /** checks that all conditions are fulliflled */
+            if !(tickerVal.nonEmpty && sharesVal.nonEmpty && priceVal.nonEmpty &&
+              datePicker.getValue != null && tickerVal.matches("^[A-Z]{1,5}$") &&
+              Try(sharesVal.toInt > 0).getOrElse(false) && Try(priceVal.toDouble > 0).getOrElse(false)) then
 
-              /** if value not int or double then error will occur  */
-              val amount = sharesField.text.value.toInt
-              val price = priceField.text.value.toDouble
-
-              if amount <= 0 then throw new IllegalArgumentException("Shares must be > 0.")
-              if price <= 0 then throw new IllegalArgumentException("Price must be > 0.")
-
-              /** format that the stock data is saved */
+              new Alert(Alert.AlertType.Error,
+                "Invalid input. Please ensure:\n\n" +
+                  "• Valid ticker that is 1-5 uppercase letters\n" +
+                  "• Shares is a positive whole number\n" +
+                  "• Price is a positive number\n" +
+                  "• All fields are filled\n" +
+                  "• Date is selected"
+              ).showAndWait()
+            else 
               val stock = StockData(
-                ticker = tickerField.text.value,
-                amount = amount,
-                price = price,
+                ticker = tickerVal,
+                amount = sharesVal.toInt,
+                price = priceVal.toDouble,
                 date = datePicker.getValue.format(DateTimeFormatter.ISO_DATE))
 
-              /** stocks get added and formated */
-              if PortfolioManager.addStockToPortfolio(name, stock) then
+              if (PortfolioManager.addStockToPortfolio(name, stock)) then
                 addStock(stock)
-                if !isExpanded then arrowButton.fire()
-              else
+                if (!isExpanded) then arrowButton.fire() 
+              else 
                 new Alert(Alert.AlertType.Error, s"Failed to add stock to portfolio '$name'").showAndWait()
-            }.recover {
-              case e => new Alert(Alert.AlertType.Error, s"Error: ${e.getMessage}").showAndWait()
-            }
+              
           case _ => ()
+        
 
       addStockButton.onAction = _ => openAddStockDialog()
 
@@ -399,7 +396,7 @@ object Main extends JFXApp3:
                     val scatterPlotVisual = portOrStock match
                       case list: List[String] => new Scatterplot(list.head)
                       case single: String => new Scatterplot(single)
-                    
+
                     portOrStock match
                       case list: List[String] => list.tail.foreach(scatterPlotVisual.displayedPortfolios += _)
                       case _ =>

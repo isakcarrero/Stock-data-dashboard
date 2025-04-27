@@ -4,7 +4,7 @@ import Data.StockDataParser.getClosingPrices
 import Data.{Portfolio, PortfolioManager, StockData}
 import scalafx.scene.chart.{CategoryAxis, NumberAxis, ScatterChart, XYChart}
 import scalafx.scene.control.{Alert, Button, ButtonType, ChoiceBox, ColorPicker, Dialog, Label, Tooltip}
-import scalafx.scene.layout.{HBox, VBox}
+import scalafx.scene.layout.{HBox, Region, VBox}
 import scalafx.scene.text.Font
 import scalafx.geometry.{Insets, Pos}
 import scalafx.util.Duration
@@ -14,6 +14,7 @@ import scalafx.scene.paint.Color
 import scalafx.Includes.*
 import scalafx.collections.ObservableBuffer
 import scalafx.scene.control.Alert.AlertType
+import scalafx.scene.shape.Rectangle
 import scalafx.stage.Popup
 
 import java.time.LocalDate
@@ -32,6 +33,7 @@ class Scatterplot(portfolioName: String):
   private val xAxis = new CategoryAxis()
   private val yAxis = new NumberAxis()
   private val scatterChart = new ScatterChart[String, Number](xAxis, yAxis)
+
 
   /** Button for adding additional portfolios to the scatterplot */
   private val addPortfolioButton = new Button("+"):
@@ -56,7 +58,7 @@ class Scatterplot(portfolioName: String):
 
   /** Callback function for adding portfolios to the chart */
   var onPortfoliosAdd: Seq[String] => Unit = _ => ()
-  
+
   /** Stores all currently displayed (portfolio name) */
   val displayedPortfolios = ObservableBuffer[String]()
 
@@ -160,6 +162,8 @@ class Scatterplot(portfolioName: String):
     popup.getContent.add(label)
     popup.setAutoHide(true)
     popup.show(scatterChart.getScene.getWindow, x + 5, y + 5)
-
+  
+  
+   
   /** Returns root layout as a Node */
   def getNode: Node = root
