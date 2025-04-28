@@ -25,6 +25,23 @@ object StockDataParser:
     val jsonString =
       if useAPI then fetchLiveData(ticker)
       else readFromFile(s"StockAPIDataDaily/$ticker.json")
+      
+    /** By using this instead of the "else" above, the dashboard would automatically
+       * save stock data for the files that the user uses in the dashboard. It checks first if
+       * the file exsists anf if not, then it loads it into a file using the Datafetcher, given
+       * that the stock ticker is correct. I was unable to test if this actually worked, It only returned that i had reached the daily
+       * limit of API calls. */
+    /** 
+      else
+       val filePath = s"StockAPIDataDaily/$ticker.json"
+       val file = new File(filePath)
+
+       if !file.exists() then
+        val fetcher = new Datafetching()
+        fetcher.getStockData(ticker)
+        readFromFile(filePath)
+       else
+        readFromFile(filePath) */
 
     if jsonString.isEmpty then return List.empty
 
