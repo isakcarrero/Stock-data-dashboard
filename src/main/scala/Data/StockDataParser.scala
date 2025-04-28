@@ -18,7 +18,7 @@ object StockDataParser:
   implicit val formats: Formats = DefaultFormats
 
   /** Change to true if you are using the API*/
-  private val useAPI = false
+  private val useAPI = true
 
   /** Gets the closing price for the last n days */
   def getClosingPrices(ticker: String, days: Int): List[(String, Double)] =

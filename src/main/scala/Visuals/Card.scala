@@ -19,9 +19,9 @@ object Card:
 
   /** A case class for saving the current state of each card */
   case class CardState(chartType: String ="" ,portOrStock: Any = "", color: String = "" )
-  
+
   /** the card states of each card gets stored here. This val is important as it helps with getting
-   * the location of the charts when saving them, and ensuring that they are inserted into the right 
+   * the location of the charts when saving them, and ensuring that they are inserted into the right
    * card when loading data from a file*/
   val cardStates: Array[CardState] = Array.fill(4)(CardState())
 
@@ -53,7 +53,7 @@ object Card:
 
     val closeButton = new Button("\u2716")
     closeButton.setStyle("-fx-background-color: transparent;")
-    
+
     /** Alert to make sure user understand what thy are doing */
     closeButton.setOnAction(_ =>
       val alert = new Alert(Alert.AlertType.Warning)

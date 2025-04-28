@@ -147,23 +147,24 @@ object Main extends JFXApp3:
       portfolioLabel.style = "-fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 5px;"
 
       val addStockButton = new Button("+"):
-        style = "-fx-font-size: 10px; -fx-font-weight: bold;"
+        style = "-fx-font-size: 9px; -fx-font-weight: bold;"
 
       var isExpanded = false
 
       val arrowButton = new Button():
+        style = "-fx-font-size: 9px; -fx-font-weight: bold;"
         graphic = new Polygon:
-          points.addAll(0.0, 0.0, 10.0, 0.0, 5.0, 8.0)
+          points.addAll(0.0, 0.0, 8.0, 0.0, 4.0, 6.0)
           style = "-fx-fill: black;"
 
       val deleteButton = new Button("Del"):
-        style = "-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: red;"
+        style = "-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: red;"
         tooltip = Tooltip("Delete Portfolio")
 
       val portfolioHeader = new HBox:
-        spacing = 5
+        spacing = 2
         children = Seq(portfolioLabel, new Region {hgrow = Priority.Always}, arrowButton, addStockButton, deleteButton)
-        style = "-fx-alignment: center-left; -fx-padding: 5px;"
+        style = "-fx-alignment: center-left; -fx-padding: 3px;"
 
       val stockList = new VBox:
         spacing = 3
@@ -239,7 +240,7 @@ object Main extends JFXApp3:
         dialog.dialogPane().content = grid
         dialog.dialogPane().buttonTypes = Seq(ButtonType.Cancel, ButtonType.OK)
 
-        dialog.showAndWait() match 
+        dialog.showAndWait() match
           case Some(ButtonType.OK) =>
             val tickerVal = tickerField.text.value
             val sharesVal = sharesField.text.value
@@ -258,7 +259,7 @@ object Main extends JFXApp3:
                   "• All fields are filled\n" +
                   "• Date is selected"
               ).showAndWait()
-            else 
+            else
               val stock = StockData(
                 ticker = tickerVal,
                 amount = sharesVal.toInt,
@@ -267,12 +268,12 @@ object Main extends JFXApp3:
 
               if (PortfolioManager.addStockToPortfolio(name, stock)) then
                 addStock(stock)
-                if (!isExpanded) then arrowButton.fire() 
-              else 
+                if (!isExpanded) then arrowButton.fire()
+              else
                 new Alert(Alert.AlertType.Error, s"Failed to add stock to portfolio '$name'").showAndWait()
-              
+
           case _ => ()
-        
+
 
       addStockButton.onAction = _ => openAddStockDialog()
 

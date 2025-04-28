@@ -162,8 +162,6 @@ class Scatterplot(portfolioName: String):
     popup.getContent.add(label)
     popup.setAutoHide(true)
     popup.show(scatterChart.getScene.getWindow, x + 5, y + 5)
-  
-  
-   
+
   /** Returns root layout as a Node */
   def getNode: Node = root
