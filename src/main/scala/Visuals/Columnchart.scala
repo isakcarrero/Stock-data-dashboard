@@ -2,17 +2,14 @@ package Visuals
 
 import Data.StockDataParser
 import scalafx.scene.chart.{BarChart, CategoryAxis, NumberAxis, XYChart}
-import scalafx.scene.layout.{Priority, VBox}
+import scalafx.scene.layout.VBox
 import scalafx.scene.control.{ChoiceBox, Tooltip}
 import scalafx.collections.ObservableBuffer
-import scalafx.Includes.*
 import scalafx.application.Platform
 import scalafx.geometry.Insets
 import scalafx.scene.text.Font
-import scalafx.geometry.Side
 import scalafx.util.Duration
 import scalafx.scene.Node
-import scalafx.scene.paint.Color
 
 /** The column chart visualizes a stocks historical prices (one week, two weeks, one month three months).
  * The user writes a stock ticker in the TextField and gives the columns a color of their choosing */

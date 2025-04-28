@@ -10,6 +10,7 @@ import scalafx.event.ActionEvent
 import scalafx.geometry.*
 import scalafx.collections.ObservableBuffer
 import scalafx.event.EventIncludes
+import scalafx.scene.control.Alert.AlertType
 import scalafx.scene.shape.Polygon
 import scalafx.stage.{FileChooser, Popup, Window}
 
@@ -148,11 +149,13 @@ object Main extends JFXApp3:
 
       val addStockButton = new Button("+"):
         style = "-fx-font-size: 9px; -fx-font-weight: bold;"
+        tooltip = Tooltip("Add Stocks")
 
       var isExpanded = false
 
       val arrowButton = new Button():
         style = "-fx-font-size: 9px; -fx-font-weight: bold;"
+        tooltip = Tooltip("View/Hide Stocks")
         graphic = new Polygon:
           points.addAll(0.0, 0.0, 8.0, 0.0, 4.0, 6.0)
           style = "-fx-fill: black;"
@@ -294,13 +297,15 @@ object Main extends JFXApp3:
       val file = chooser.showSaveDialog(window)
       if (file != null) then
         val writer = PrintWriter(file)
-
+        
+        /** First it prints all the stock and portfolio information form PortfolioManager*/
         writer.println("portfolio,ticker,date,price,amount")
         val allData = PortfolioManager.getAllPortfolios
         for (portfolioName, portfolio) <- allData do
           for stock <- portfolio.stocks do
             writer.println(s"${portfolioName},${stock.ticker},${stock.date},${stock.price},${stock.amount}")
 
+        /** Then it prints the information of the cards current states from the Card object */
         writer.println("chartType,portOrStock,color")
         for (i <- Card.cardStates.indices) do
           val cardState = Card.cardStates(i)
@@ -321,105 +326,113 @@ object Main extends JFXApp3:
 
       val file = chooser.showOpenDialog(window)
       if file != null then
-        val lines = Source.fromFile(file).getLines().toList
+        /** An alert that informs the user that loading the file will remove current state of dashboard */
+        val alert = new Alert(AlertType.Warning)
+        alert.setTitle("Warning")
+        alert.setHeaderText("Loading this file will remove the current state of the dashboard.")
+        alert.setContentText("Do you want to proceed?")
 
-        /** We start by splitting upp the portfolio and chart data */
-        val separatorIndex = lines.indexWhere(_.startsWith("chartType,portOrStock,color"))
-        val (portfolioLines, chartLines) = lines.splitAt(separatorIndex)
-
-        /** Clearing sidebar and portfolio content */
-        val dataLines = portfolioLines.tail
-        PortfolioManager.clearAllPortfolios()
-        sidebarContent.children.clear()
-
-        /** for storing the stocks */
-        val portfolioStocks = mutable.Map[String, List[StockData]]().withDefaultValue(Nil)
-
-        /** getting the data for each portfolio and storing it in our map */
-        for line <- dataLines do
-          val cols = line.split(",").map(_.trim)
-          if cols.length == 5 then
-            val portfolioName = cols(0)
-            val ticker = cols(1)
-            val date = cols(2)
-            val price = cols(3).toDouble
-            val amount = cols(4).toInt
-            val stock = StockData(ticker, amount, price, date)
-            portfolioStocks(portfolioName) = stock :: portfolioStocks(portfolioName)
-
-        /** Creating each portfolio and adding the stocks to it */
-        for (name, stocks) <- portfolioStocks do
-          PortfolioManager.createPortfolio(name)
-          stocks.foreach(stock => PortfolioManager.addStockToPortfolio(name, stock))
-          createPortfolioSB(name, stocks.reverse)
-
-        /** Now we load the chart data */
-        val chartConfigLines = chartLines.tail
-        val cards = List(Card.card1, Card.card2, Card.card3, Card.card4)
-
-        /** get the information for each row in our csv file and check what chart
-         * it is and display it based on that */
-        for (i <- 0 until 4) do
-          if i < chartConfigLines.length then
-            val cols = chartConfigLines(i).split(",", -1).map(_.trim)
-
-            if cols.length >= 3 && cols(0).nonEmpty then
-              val chartType = cols(0)
-              val portOrStock =
-                if chartType == "scatterPlot" && cols(1).contains("|") then
-                  cols(1).split("\\|").toList
-                else if cols(1).contains(",") then
-                  cols(1).split(",").toList
-                else if cols(1).nonEmpty then
-                  cols(1)
-                else
-                  ""
-              val color = if cols.length >= 3 then cols(2) else ""
-
-              /** We update the card states */
-              Card.cardStates(i) = Card.CardState(chartType, portOrStock, color)
-
-              /** And then we can restore the data and create the charts */
-              chartType match
-                case "ColumnChart" =>
-                  if portOrStock.toString.nonEmpty then
-                    val columnChartVisual = new Columnchart(portOrStock.toString, color)
-                    cards(i).getChildren.setAll(Card.closeWrapper(columnChartVisual.getNode, cards(i)))
-
-                case "pieChart" =>
-                  if portOrStock.toString.nonEmpty then
-                    val pieChartVisual = new Piechart(portOrStock.toString)
-                    cards(i).getChildren.setAll(Card.closeWrapper(pieChartVisual.chart, cards(i)))
-
-                case "scatterPlot" =>
-                  println(portOrStock)
-                  if portOrStock.toString.nonEmpty then
-                    val scatterPlotVisual = portOrStock match
-                      case list: List[String] => new Scatterplot(list.head)
-                      case single: String => new Scatterplot(single)
-
-                    portOrStock match
-                      case list: List[String] => list.tail.foreach(scatterPlotVisual.displayedPortfolios += _)
-                      case _ =>
-
-                    scatterPlotVisual.onPortfoliosAdd = portfolios =>
-                      Card.cardStates(i) = Card.CardState("scatterPlot", portfolios)
-                    scatterPlotVisual.updateChart()
-                    cards(i).getChildren.setAll(Card.closeWrapper(scatterPlotVisual.getNode, cards(i)))
-
-                case "infoCard" =>
-                  if portOrStock.toString.nonEmpty then
-                    val infoCardVisual = new Portfolioinfo(portOrStock.toString)
-                    cards(i).getChildren.setAll(Card.closeWrapper(infoCardVisual.infoCard, cards(i)))
-
-                case _ =>
-
-            else
-              /** resetting of cards that don't have content according to the csv file */
-              val insertButton = new Button("Insert")
-              insertButton.setOnAction(_ => Card.showSelectionDialog(cards(i)))
-              cards(i).getChildren.setAll(insertButton)
-              Card.cardStates(i) = Card.CardState()
+        val result = alert.showAndWait()
+        if result.get == ButtonType.OK then
+          val lines = Source.fromFile(file).getLines().toList
+  
+          /** We start by splitting upp the portfolio and chart data */
+          val separatorIndex = lines.indexWhere(_.startsWith("chartType,portOrStock,color"))
+          val (portfolioLines, chartLines) = lines.splitAt(separatorIndex)
+  
+          /** Clearing sidebar and portfolio content */
+          val dataLines = portfolioLines.tail
+          PortfolioManager.clearAllPortfolios()
+          sidebarContent.children.clear()
+  
+          /** for storing the stocks */
+          val portfolioStocks = mutable.Map[String, List[StockData]]().withDefaultValue(Nil)
+  
+          /** getting the data for each portfolio and storing it in our map */
+          for line <- dataLines do
+            val cols = line.split(",").map(_.trim)
+            if cols.length == 5 then
+              val portfolioName = cols(0)
+              val ticker = cols(1)
+              val date = cols(2)
+              val price = cols(3).toDouble
+              val amount = cols(4).toInt
+              val stock = StockData(ticker, amount, price, date)
+              portfolioStocks(portfolioName) = stock :: portfolioStocks(portfolioName)
+  
+          /** Creating each portfolio and adding the stocks to it */
+          for (name, stocks) <- portfolioStocks do
+            PortfolioManager.createPortfolio(name)
+            stocks.foreach(stock => PortfolioManager.addStockToPortfolio(name, stock))
+            createPortfolioSB(name, stocks.reverse)
+  
+          /** Now we load the chart data */
+          val chartConfigLines = chartLines.tail
+          val cards = List(Card.card1, Card.card2, Card.card3, Card.card4)
+  
+          /** get the information for each row in our csv file and check what chart
+           * it is and display it based on that */
+          for (i <- 0 until 4) do
+            if i < chartConfigLines.length then
+              val cols = chartConfigLines(i).split(",", -1).map(_.trim)
+  
+              if cols.length >= 3 && cols(0).nonEmpty then
+                val chartType = cols(0)
+                val portOrStock =
+                  if chartType == "scatterPlot" && cols(1).contains("|") then
+                    cols(1).split("\\|").toList
+                  else if cols(1).contains(",") then
+                    cols(1).split(",").toList
+                  else if cols(1).nonEmpty then
+                    cols(1)
+                  else
+                    ""
+                val color = if cols.length >= 3 then cols(2) else ""
+  
+                /** We update the card states */
+                Card.cardStates(i) = Card.CardState(chartType, portOrStock, color)
+  
+                /** And then we can restore the data and create the charts */
+                chartType match
+                  case "ColumnChart" =>
+                    if portOrStock.toString.nonEmpty then
+                      val columnChartVisual = new Columnchart(portOrStock.toString, color)
+                      cards(i).getChildren.setAll(Card.closeWrapper(columnChartVisual.getNode, cards(i)))
+  
+                  case "pieChart" =>
+                    if portOrStock.toString.nonEmpty then
+                      val pieChartVisual = new Piechart(portOrStock.toString)
+                      cards(i).getChildren.setAll(Card.closeWrapper(pieChartVisual.chart, cards(i)))
+  
+                  case "scatterPlot" =>
+                    println(portOrStock)
+                    if portOrStock.toString.nonEmpty then
+                      val scatterPlotVisual = portOrStock match
+                        case list: List[String] => new Scatterplot(list.head)
+                        case single: String => new Scatterplot(single)
+  
+                      portOrStock match
+                        case list: List[String] => list.tail.foreach(scatterPlotVisual.displayedPortfolios += _)
+                        case _ =>
+  
+                      scatterPlotVisual.onPortfoliosAdd = portfolios =>
+                        Card.cardStates(i) = Card.CardState("scatterPlot", portfolios)
+                      scatterPlotVisual.updateChart()
+                      cards(i).getChildren.setAll(Card.closeWrapper(scatterPlotVisual.getNode, cards(i)))
+  
+                  case "infoCard" =>
+                    if portOrStock.toString.nonEmpty then
+                      val infoCardVisual = new Portfolioinfo(portOrStock.toString)
+                      cards(i).getChildren.setAll(Card.closeWrapper(infoCardVisual.infoCard, cards(i)))
+  
+                  case _ =>
+  
+              else
+                /** resetting of cards that don't have content according to the csv file */
+                val insertButton = new Button("Insert")
+                insertButton.setOnAction(_ => Card.showSelectionDialog(cards(i)))
+                cards(i).getChildren.setAll(insertButton)
+                Card.cardStates(i) = Card.CardState()
 
     /** ********************************************************************************************
      * /**Event handling**/

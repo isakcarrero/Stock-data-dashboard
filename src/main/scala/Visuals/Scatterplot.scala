@@ -3,17 +3,16 @@ package Visuals
 import Data.StockDataParser.getClosingPrices
 import Data.{Portfolio, PortfolioManager, StockData}
 import scalafx.scene.chart.{CategoryAxis, NumberAxis, ScatterChart, XYChart}
-import scalafx.scene.control.{Alert, Button, ButtonType, ChoiceBox, ColorPicker, Dialog, Label, Tooltip}
-import scalafx.scene.layout.{HBox, Region, VBox}
+import scalafx.scene.control.{Button, ButtonType, ChoiceBox, Dialog, Label, Tooltip}
+import scalafx.scene.layout.{HBox, Pane, Region, StackPane, VBox}
 import scalafx.scene.text.Font
 import scalafx.geometry.{Insets, Pos}
 import scalafx.util.Duration
-import scalafx.application.Platform
 import scalafx.scene.Node
-import scalafx.scene.paint.Color
 import scalafx.Includes.*
 import scalafx.collections.ObservableBuffer
-import scalafx.scene.control.Alert.AlertType
+import scalafx.scene.input.MouseEvent
+import scalafx.scene.paint.Color
 import scalafx.scene.shape.Rectangle
 import scalafx.stage.Popup
 
@@ -33,8 +32,8 @@ class Scatterplot(portfolioName: String):
   private val xAxis = new CategoryAxis()
   private val yAxis = new NumberAxis()
   private val scatterChart = new ScatterChart[String, Number](xAxis, yAxis)
-
-
+  
+  
   /** Button for adding additional portfolios to the scatterplot */
   private val addPortfolioButton = new Button("+"):
     style = s"-fx-font-size: 11px; -fx-background-radius: 5;"
@@ -60,7 +59,7 @@ class Scatterplot(portfolioName: String):
   var onPortfoliosAdd: Seq[String] => Unit = _ => ()
 
   /** Stores all currently displayed (portfolio name) */
-  val displayedPortfolios = ObservableBuffer[String]()
+  val displayedPortfolios: ObservableBuffer[String] = ObservableBuffer[String]()
 
   displayedPortfolios += portfolioName
   onPortfoliosAdd(displayedPortfolios.toSeq)
@@ -162,6 +161,6 @@ class Scatterplot(portfolioName: String):
     popup.getContent.add(label)
     popup.setAutoHide(true)
     popup.show(scatterChart.getScene.getWindow, x + 5, y + 5)
-
+  
   /** Returns root layout as a Node */
   def getNode: Node = root

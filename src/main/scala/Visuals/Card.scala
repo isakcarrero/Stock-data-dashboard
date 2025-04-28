@@ -3,11 +3,10 @@ package Visuals
 
 import Data.PortfolioManager
 import scalafx.geometry.{Insets, Orientation, Pos}
-import scalafx.scene.control.{Alert, Button, ButtonType, ChoiceBox, ColorPicker, Dialog, Label, SplitPane, TextField, TextInputDialog}
-import scalafx.scene.layout.{ColumnConstraints, GridPane, RowConstraints, StackPane, VBox}
+import scalafx.scene.control.{Alert, Button, ButtonType, ChoiceBox, ColorPicker, Dialog, Label, SplitPane, TextField}
+import scalafx.scene.layout.{StackPane, VBox}
 import scalafx.collections.ObservableBuffer
 import scalafx.scene.Node
-import scalafx.scene.chart.PieChart
 import scalafx.scene.control.Alert.AlertType
 
 /** The card grid with the cards make up the center of the rootpane. They are there in case the user
@@ -75,10 +74,10 @@ object Card:
     wrapper
 
   /** Create the four cards */
-  val card1 = createCard("Insert")
-  val card2 = createCard("Insert")
-  val card3 = createCard("Insert")
-  val card4 = createCard("Insert")
+  val card1: StackPane = createCard("Insert")
+  val card2: StackPane = createCard("Insert")
+  val card3: StackPane = createCard("Insert")
+  val card4: StackPane = createCard("Insert")
 
   /** SplitPane is used as it is easier to implement card resizing than with GridPane */
   /** Horizontal split (top and bottom halves) */
@@ -104,7 +103,7 @@ object Card:
     ObservableBuffer.from(PortfolioManager.getAllPortfolios.keys.toSeq)
 
 /** Selection dialog where the user chooses what kind of chart or information they want to insert. */
-  def showSelectionDialog(targetCard: StackPane) =
+  def showSelectionDialog(targetCard: StackPane): Any =
     val dialog = new Dialog[String]()
     dialog.setTitle("Select Display Type")
 
@@ -126,7 +125,7 @@ object Card:
 
   /** This functions as a dialog for choosing which portfolio to display in the Piechart,
    * Infocard and Scatterplot. It saves the chosen portfolio as an option */
-  def portfolioSelectionDialog(title: String): Option[String] =
+  private def portfolioSelectionDialog(title: String): Option[String] =
     val dialog = new Dialog[String]()
     dialog.setTitle(title)
     dialog.setWidth(200)
@@ -147,8 +146,8 @@ object Card:
 
   /** This method uses the chosen portfolio from the portfolioSelectionDialog to visualize the data as a
    * Pie Chart, Info Card or Scatter Plot. */
-  def showPortfolioChart[T](title: String, targetCard: StackPane, chartType: String,
-                            chartBuilder: String => T, nodeExtractor: T => Node) =
+  private def showPortfolioChart[T](title: String, targetCard: StackPane, chartType: String,
+                                    chartBuilder: String => T, nodeExtractor: T => Node) =
     portfolioSelectionDialog(title) match
       case Some(name) =>
         PortfolioManager.getPortfolio(name) match
@@ -171,7 +170,7 @@ object Card:
    * as parameters when creating the new Columnchart. It has a lot of the same functionality
    * as portfolioSelectionDialog and showPortfolioChart, but dou to it having a ColorPicker it
    * had to be made separate*/
-  def columnChartDialog(title: String, targetCard: StackPane) =
+  private def columnChartDialog(title: String, targetCard: StackPane) =
     val dialog = new Dialog[String]
     dialog.setTitle("Select Portfolio and Color")
     dialog.setWidth(200)
@@ -201,17 +200,17 @@ object Card:
 
   /** This is the method for visualizing the Info Card. It uses the showPortfolioChart
    * to do so*/
-  def infoCard(title: String, targetCard: StackPane) =
+  def infoCard(title: String, targetCard: StackPane): Any =
     showPortfolioChart(title, targetCard, "infoCard", name => new Portfolioinfo(name), _.infoCard)
 
   /** This is the method for visualizing the Pie Chart. It uses the showPortfolioChart
    * to do so*/
-  def pieChart(title: String, targetCard: StackPane) =
+  private def pieChart(title: String, targetCard: StackPane) =
     showPortfolioChart(title, targetCard, "pieChart", name => new Piechart(name), _.chart)
 
   /** This is the method for visualizing the Scatter Plot. It uses the showPortfolioChart
    * to do so*/
-  def scatterPlot(title: String, targetCard: StackPane) =
+  private def scatterPlot(title: String, targetCard: StackPane) =
     showPortfolioChart(title, targetCard, "scatterPlot",
       name =>
         val plot = new Scatterplot(name)
