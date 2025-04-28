@@ -2,11 +2,10 @@ package Visuals
 
 import scalafx.scene.layout.{HBox, StackPane, VBox}
 import scalafx.scene.control.Label
-import scalafx.geometry.{Insets, Pos}
-import scalafx.scene.text.Font
+import scalafx.geometry.Pos
 import Data.PortfolioManager.getPortfolio
 import Data.StockDataParser.getClosingPrices
-import scalafx.geometry.Pos.{Center, CenterLeft}
+import scalafx.geometry.Pos.Center
 
 class Portfolioinfo(portfolioName: String):
 

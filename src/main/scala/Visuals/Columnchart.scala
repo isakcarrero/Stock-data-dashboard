@@ -52,8 +52,8 @@ class Columnchart(ticker: String, color: String):
     val days = period match
       case "1 Week" => 6
       case "2 Weeks" => 11
-      case "1 Month" => 25
-      case "3 Months" => 78
+      case "1 Month" => 22
+      case "3 Months" => 66
       case _ => 6
 
     /** Functionality for fetching the n latest closing prices, either form a file of form the API*/

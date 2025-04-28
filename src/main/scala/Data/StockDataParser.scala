@@ -18,7 +18,7 @@ object StockDataParser:
   implicit val formats: Formats = DefaultFormats
 
   /** Change to true if you are using the API*/
-  private val useAPI = true
+  private val useAPI = false
 
   /** Gets the closing price for the last n days */
   def getClosingPrices(ticker: String, days: Int): List[(String, Double)] =
@@ -29,6 +29,7 @@ object StockDataParser:
     if jsonString.isEmpty then return List.empty
 
     val json = parse(jsonString)
+    /** if you are using monthly time series then change to "Monthly Adjusted Time Series" */
     val timeSeries = json \ "Time Series (Daily)"
 
     val closingData = timeSeries match
@@ -51,6 +52,7 @@ object StockDataParser:
 /** Method for parsing the data from API */
   private def fetchLiveData(ticker: String): String =
     val apiKey = "LMJ7WY6F7CEEQUAD"
+    /** for monthly time series use TIME_SERIES_MONTHLY_ADJUSTED */
     val url = new URL(s"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=$ticker&apikey=$apiKey&datatype=json")
     Try(Source.fromInputStream(url.openStream()).mkString).getOrElse("")
 

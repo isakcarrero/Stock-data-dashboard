@@ -188,6 +188,7 @@ object Card:
       case Some(ticker) =>
         val stockTicker = stockInput.text.value
         val chosenColor = columnColor.value.value
+        /** Inspired by Moe who commented on a GitHub post */
         val hexColor = String.format("#%02X%02X%02X",
           (chosenColor.getRed * 255).toInt,
           (chosenColor.getGreen * 255).toInt,
