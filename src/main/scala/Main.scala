@@ -23,7 +23,7 @@ import scala.collection.mutable.Map
 
 object Main extends JFXApp3:
 
-  def start() =
+  def start(): Unit =
 
     stage = new JFXApp3.PrimaryStage:
       title = "MyStocks.com"
@@ -269,9 +269,9 @@ object Main extends JFXApp3:
                 price = priceVal.toDouble,
                 date = datePicker.getValue.format(DateTimeFormatter.ISO_DATE))
 
-              if (PortfolioManager.addStockToPortfolio(name, stock)) then
+              if PortfolioManager.addStockToPortfolio(name, stock) then
                 addStock(stock)
-                if (!isExpanded) then arrowButton.fire()
+                if !isExpanded then arrowButton.fire()
               else
                 new Alert(Alert.AlertType.Error, s"Failed to add stock to portfolio '$name'").showAndWait()
 
@@ -295,7 +295,7 @@ object Main extends JFXApp3:
         title = "Export Data"
         extensionFilters.add(FileChooser.ExtensionFilter("CSV Files", "*.csv"))
       val file = chooser.showSaveDialog(window)
-      if (file != null) then
+      if file != null then
         val writer = PrintWriter(file)
         
         /** First it prints all the stock and portfolio information form PortfolioManager*/
@@ -303,7 +303,7 @@ object Main extends JFXApp3:
         val allData = PortfolioManager.getAllPortfolios
         for (portfolioName, portfolio) <- allData do
           for stock <- portfolio.stocks do
-            writer.println(s"${portfolioName},${stock.ticker},${stock.date},${stock.price},${stock.amount}")
+            writer.println(s"$portfolioName,${stock.ticker},${stock.date},${stock.price},${stock.amount}")
 
         /** Then it prints the information of the cards current states from the Card object */
         writer.println("chartType,portOrStock,color")
@@ -314,7 +314,7 @@ object Main extends JFXApp3:
               if cardState.chartType == "scatterPlot" then list.mkString("|")
               else list.mkString(",")
             case other => other.toString
-          writer.println(s"${cardState.chartType},${portOrStockStr},${cardState.color}")
+          writer.println(s"${cardState.chartType},$portOrStockStr,${cardState.color}")
         writer.close()
 
     /** Method for loading data. The method uses a csv file form the users files to display a

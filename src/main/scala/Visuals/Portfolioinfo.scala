@@ -47,7 +47,7 @@ class Portfolioinfo(portfolioName: String):
     style = "-fx-font-weight: bold; -fx-font-size: 13px;"
   private val weeklyGainValueLabel = new Label(
     if weeklyGain < 0 then
-      val newWeekly = weeklyGain*(-1)
+      val newWeekly = weeklyGain* -1
       s"-$$$newWeekly ($weeklyGainPerc%)"
     else
       s"$$$weeklyGain ($weeklyGainPerc%)"):
@@ -57,7 +57,7 @@ class Portfolioinfo(portfolioName: String):
     style = "-fx-font-weight: bold; -fx-font-size: 13px;"
   private val totalGainValueLabel = new Label(
     if totalGain < 0 then
-      val newTotal = totalGain*(-1)
+      val newTotal = totalGain* -1
       s"-$$$newTotal ($totalGainPerc%)"
     else
       s"$$$totalGain ($totalGainPerc%)"):
@@ -73,14 +73,14 @@ class Portfolioinfo(portfolioName: String):
   private val biggestAllocationValueLabel = new Label(biggestAllocation):
     style = "-fx-font-weight: normal; -fx-font-size: 13px; "
 
-  val infoCard = new StackPane:
+  val infoCard: StackPane = new StackPane:
     
     prefWidth = 400
     
     /** layouting */
-    val infoHeader = new Label(s"$portfolioName Info"):
+    val infoHeader: Label = new Label(s"$portfolioName Info"):
       style = "-fx-font-size: 16px; -fx-font-weight: Bold;"
-    val labelColumn = new VBox(10):
+    val labelColumn: VBox = new VBox(10):
       children = Seq(
         totalValueLabel,
         weeklyGainLabel,
@@ -89,7 +89,7 @@ class Portfolioinfo(portfolioName: String):
         biggestAllocationLabel
       )
 
-    val valueColumn = new VBox(10):
+    val valueColumn: VBox = new VBox(10):
       children = Seq(
         totalValueValueLabel,
         weeklyGainValueLabel,
@@ -98,11 +98,11 @@ class Portfolioinfo(portfolioName: String):
         biggestAllocationValueLabel
       )
 
-    val content = new HBox(30):
+    val content: HBox = new HBox(30):
       alignment = Center
       children = Seq(labelColumn, valueColumn)
 
-    val wholeContent = new VBox(10):
+    val wholeContent: VBox = new VBox(10):
       alignment = Center
       children = Seq(infoHeader, content)
       style = "-fx-background-color: white; -fx-border-color: gray; -fx-border-width: 5px"

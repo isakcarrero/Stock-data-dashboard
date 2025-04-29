@@ -99,7 +99,7 @@ object Card:
 
   /** Method for getting the portfolio names form the PortfolioManager class, so that they can be
  * listed in the dropdown lists. */
-  def getPortfolioNames: ObservableBuffer[String] =
+  private def getPortfolioNames: ObservableBuffer[String] =
     ObservableBuffer.from(PortfolioManager.getAllPortfolios.keys.toSeq)
 
 /** Selection dialog where the user chooses what kind of chart or information they want to insert. */
@@ -156,10 +156,6 @@ object Card:
             val node = nodeExtractor(chart)
             targetCard.getChildren.setAll(closeWrapper(node, targetCard))
             updateCardState(targetCard, CardState(chartType, name))
-            println("cardStates(0) =" + cardStates(0))
-            println("cardStates(1) =" + cardStates(1))
-            println("cardStates(2) =" + cardStates(2))
-            println("cardStates(3) =" + cardStates(3))
           case Some(_) =>
             new Alert(AlertType.Error, s"Portfolio '$name' is empty!").showAndWait()
           case None =>
@@ -170,7 +166,7 @@ object Card:
    * as parameters when creating the new Columnchart. It has a lot of the same functionality
    * as portfolioSelectionDialog and showPortfolioChart, but dou to it having a ColorPicker it
    * had to be made separate*/
-  private def columnChartDialog(title: String, targetCard: StackPane) =
+  private def columnChartDialog(title: String, targetCard: StackPane): Unit =
     val dialog = new Dialog[String]
     dialog.setTitle("Select Portfolio and Color")
     dialog.setWidth(200)

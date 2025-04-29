@@ -13,7 +13,7 @@ object PortfolioManager:
   val portfolios: mutable.Map[String, Portfolio] = mutable.LinkedHashMap[String, Portfolio]()
 
   def createPortfolio(name: String): Boolean =
-    if (portfolios.contains(name)) then
+    if portfolios.contains(name) then
       false
     else
       portfolios(name) = Portfolio(name, mutable.Buffer[StockData]())

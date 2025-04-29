@@ -18,7 +18,7 @@ class Piechart(portfolioName: String):
       groupedValues.map((ticker, value) => ticker -> (value / totalValue * 100))
     case None => Map[String, Double]()
 
-  val chart = new PieChart:
+  val chart: PieChart = new PieChart:
     style = s"-fx-font-size: 8px;"
     title = s"$portfolioName Allocation"
     data = ObservableBuffer(portfolioData.map((stock, percentage) =>
